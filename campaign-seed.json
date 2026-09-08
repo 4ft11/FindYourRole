@@ -1,0 +1,32 @@
+{
+  "status": {
+    "label": "ROLES LOCATED",
+    "total": 5,
+    "filled": 4,
+    "displayValue": "4 / 5",
+    "bubbles": ["filled", "filled", "filled", "filled", "empty"],
+    "flickerFifth": true,
+    "statusMessage": "",
+    "accentColor": "#715328",
+    "filledColor": "#4b361d",
+    "emptyColor": "#c9b77f"
+  },
+  "players": [
+    {
+      "key": "ariel", "name": "Ariel", "role": "The Sworn", "displayRole": "The Sworn", "path": "UNCONFIRMED", "characterClass": "Paladin", "subclass": "UNCONFIRMED", "species": "FORM UNCONFIRMED", "manifestation": "AWAITING RECOGNITION", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+    },
+    {
+      "key": "noah", "name": "Noah", "role": "The Sovereign", "displayRole": "The Sovereign", "path": "UNCONFIRMED", "characterClass": "Warlock", "subclass": "UNCONFIRMED", "species": "Aasimar", "manifestation": "Necrotic Shroud", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+    },
+    {
+      "key": "michael", "name": "Michael", "role": "The Weaver", "displayRole": "The Weaver", "path": "The Unfettered", "characterClass": "Monk", "subclass": "Open Hand", "species": "FORM UNCONFIRMED", "manifestation": "AWAITING RECOGNITION", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+    },
+    {
+      "key": "chris", "name": "Chris", "role": "The Seer", "displayRole": "The Seer", "path": "The Starreader", "characterClass": "Druid", "subclass": "Circle of the Stars", "species": "Aasimar", "manifestation": "UNCONFIRMED", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+    }
+  ]
+}

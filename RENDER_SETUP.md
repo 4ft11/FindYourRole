@@ -2,6 +2,10 @@
 
 This version runs without a database. The uploaded website files are the shared source of truth, so every successful GitHub upload and Render redeploy updates the campaign information for all visitors.
 
+## Important GitHub upload rule
+
+Open the folder named `UPLOAD-THIS-FOLDER-FindYourRole`, select everything **inside** it, and drag those items into the GitHub uploader. The `app` folder and `package.json` must be visible on the repository's main page. Do not upload the enclosing folder as a single nested folder, or Render will report that it cannot find an `app` or `pages` directory.
+
 ## Render settings
 
 1. Set the build command to:
@@ -37,5 +41,9 @@ The DM Creation Studio at `/dm-ui` is a browser-local creative tool for system w
 Spell cards use plain-language descriptions and roll instructions. Limited spells gray out after their final use. Short Rest and Long Rest controls restore the appropriate uses. Select an outcome such as hit, missed, saved, resisted, countered, or failed before choosing a target.
 
 Maps save in that browser. Use **Export Backup** before changing computers or clearing browser data, then use **Import Backup** on the other computer.
+
+## Solenian Empire map
+
+Open `/dm-ui` and choose **Empire Map**. Paint terrain, place and rename settlements, forts, ports, ruins, and regions, then draw roads or rivers between spaces. The atlas saves locally. **Download Player Map** creates a PNG for Discord or a television; **Export Editable Backup** preserves a JSON file that can be restored later.
 
 No campaign data or DM drafts are sent to ChatGPT, and the website does not create ChatGPT share links.

@@ -5,7 +5,7 @@ import nextTs from 'eslint-config-next/typescript';
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'Wayfarer-Quiz-GitHub-Render*/**']),
+  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '_Old Website Packages/**', 'UPLOAD-THIS-FOLDER-FindYourRole/**', 'Wayfarer-Quiz-GitHub-Render*/**']),
 ]);
 
 export default eslintConfig;

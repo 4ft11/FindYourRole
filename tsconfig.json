@@ -31,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "Wayfarer-Quiz-GitHub-Render*/**", "Wayfarer-Quiz-Manual-Upload*/**", "Wayfarer-Campaign-Studio*/**"]
+  "exclude": ["node_modules", "_Old Website Packages/**", "UPLOAD-THIS-FOLDER-FindYourRole/**", "Wayfarer-Quiz-GitHub-Render*/**", "Wayfarer-Quiz-Manual-Upload*/**", "Wayfarer-Campaign-Studio*/**"]
 }

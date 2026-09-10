@@ -113,6 +113,9 @@ export default function ContinuityCalibration() {
   function openPlayerRecord() { if (campaignPlayer) setScreen('player'); }
 
   const status = screen === 'verify' ? 'IDENTITY CONFIRMATION REQUIRED' : screen === 'secret-selection' ? 'PRIVATE RECORD OPEN' : screen === 'matched' ? 'IDENTITY MATCH FOUND' : screen === 'calibration' ? `CALIBRATION: ${progress}%` : screen === 'player' ? 'PLAYER RECORD SYNCHRONIZED' : 'CALIBRATION COMPLETE';
+  if (screen === 'secret-selection' && secretIdentity) {
+    return <main className="deity-conversation-shell"><SecretSelection identity={secretIdentity} onReturn={() => setScreen('verify')} /></main>;
+  }
   return <main className="campaign-shell">
     <div className="scanlines" />
     <header className="trail-header"><span>◈ WAYFARER</span><span>CONTINUITY INDEX // v2.0</span></header>
@@ -134,8 +137,6 @@ export default function ContinuityCalibration() {
           {error === 'storage' && <div className="identity-error"><strong>RECORD TEMPORARILY UNAVAILABLE</strong><span>Refresh the page and try the identity check again.</span></div>}
           <button className="primary-button" type="submit" disabled={!name.trim() || Boolean(knownIdentity && !secretIdentity && !affirmed)}>{secretIdentity ? 'CONTINUE' : knownIdentity ? 'AGREE' : 'LOCATE RECORD'} <span>›</span></button>
         </form>}
-
-        {screen === 'secret-selection' && secretIdentity && <SecretSelection identity={secretIdentity} onReturn={() => setScreen('verify')} />}
 
         {screen === 'matched' && player && <section className="identity-match panel-fade">
           <p className="eyebrow">IDENTITY MATCH FOUND</p><h2>Welcome back, {player.name}.</h2>

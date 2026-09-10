@@ -21,7 +21,7 @@ Open the folder named `UPLOAD-THIS-FOLDER-FindYourRole`, select everything **ins
 
 The public quiz and DM Creation Studio do not require a database or environment variables.
 
-The public entrance now has two private name-triggered records for **Celis** and **Matt**. They do not need to choose a role and are not sent to the original archetype quiz. Their short selections and answers remain local to their browser and end with a private-record notice.
+The public entrance now has two private name-triggered conversations for **Celis** and **Matt**. They do not need to choose a role and are not sent to the original archetype quiz. Celis speaks with Auren in a sunlit faerie field; Matt enters a private induction with the watcher of journeymen. Neither conversation uses the dungeon frame, quiz numbering, scoring, or a progress bar. Their replies remain local to their browser and can be copied for the game master.
 
 ## Updating shared campaign information
 

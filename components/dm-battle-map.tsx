@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import BattleMapBoard from './battle-map-board';
-import { AreaKind, BattleMapState, battleMapChannel, battleMapStorageKey, defaultBattleMap, EffectKind, GridKind, mapDistance, MapSpell, MapToken, newId, RechargeKind, SpellOutcome, spellAvailable, TokenKind } from '@/lib/battle-map-types';
+import { AreaKind, BattleMapState, battleMapChannel, battleMapStorageKey, defaultBattleMap, EffectKind, GridKind, mapDistance, MapSpell, MapToken, newId, RechargeKind, SpellOutcome, spellAvailable, starterActionsForPlayer, TokenKind } from '@/lib/battle-map-types';
 
 type Cell = { x: number; y: number };
 type Tool = 'select' | 'move' | 'measure' | 'spell';
@@ -14,15 +14,23 @@ const recharges: { value: RechargeKind; label: string }[] = [{ value: 'unlimited
 const blankSpell = (): MapSpell => ({ id: newId('spell'), name: 'New Spell', rangeFeet: 60, areaKind: 'single', areaFeet: 5, effectKind: 'force', description: 'Describe what the player sees and what the spell does.', rollHelp: 'Choose a target within range, then follow the character sheet.', recharge: 'long-rest', maxUses: 1, remainingUses: 1 });
 
 function clamp(value: number, min: number, max: number) { return Math.min(max, Math.max(min, value)); }
+function addMissingStarterActions(map: BattleMapState): BattleMapState {
+  return {
+    ...map,
+    tokens: map.tokens.map((token) => token.kind === 'player' && token.spells.length === 0
+      ? { ...token, spells: starterActionsForPlayer(token.name) }
+      : token),
+  };
+}
 function safeMap(input: unknown): BattleMapState | null {
   if (!input || typeof input !== 'object') return null;
   const map = input as Partial<BattleMapState>;
   if (map.version !== 1 || !Array.isArray(map.tokens)) return null;
-  return { ...defaultBattleMap, ...map, columns: clamp(Number(map.columns) || 20, 6, 40), rows: clamp(Number(map.rows) || 14, 6, 30), feetPerCell: clamp(Number(map.feetPerCell) || 5, 1, 20), tokens: map.tokens };
+  return addMissingStarterActions({ ...defaultBattleMap, ...map, columns: clamp(Number(map.columns) || 20, 6, 40), rows: clamp(Number(map.rows) || 14, 6, 30), feetPerCell: clamp(Number(map.feetPerCell) || 5, 1, 20), tokens: map.tokens });
 }
 
 export default function DmBattleMap() {
-  const [map, setMap] = useState<BattleMapState>(defaultBattleMap);
+  const [map, setMap] = useState<BattleMapState>(() => addMissingStarterActions(defaultBattleMap));
   const [ready, setReady] = useState(false);
   const [selectedId, setSelectedId] = useState(defaultBattleMap.tokens[0].id);
   const [tool, setTool] = useState<Tool>('select');
@@ -97,6 +105,14 @@ export default function DmBattleMap() {
   }
   function removeToken() { if (!selected || !window.confirm(`Remove ${selected.name} from this map?`)) return; setMap((current) => ({ ...current, tokens: current.tokens.filter((token) => token.id !== selected.id), activeTurnId: current.activeTurnId === selected.id ? '' : current.activeTurnId })); setSelectedId(''); }
   function addSpell() { if (!selected) return; updateToken(selected.id, { spells: [...selected.spells, blankSpell()] }); }
+  function restoreStarterActions() {
+    if (!selected || selected.kind !== 'player') return;
+    const starter = starterActionsForPlayer(selected.name);
+    if (!starter.length) { setNotice('NO STARTER SET EXISTS FOR THIS TOKEN NAME'); return; }
+    if (selected.spells.length && !window.confirm(`Replace ${selected.name}’s current spell and action cards with the starter set?`)) return;
+    updateToken(selected.id, { spells: starter });
+    setNotice(`${selected.name.toUpperCase()} // STARTER ACTIONS LOADED`);
+  }
   function removeSpell(spellId: string) { if (!selected || !window.confirm('Remove this spell or action?')) return; updateToken(selected.id, { spells: selected.spells.filter((spell) => spell.id !== spellId) }); }
 
   function rest(kind: 'short' | 'long') {
@@ -147,13 +163,13 @@ export default function DmBattleMap() {
         </div></details>
         <details open><summary>PLAYER SPELLS AND ACTIONS</summary><div className="battle-control-body">
           {!selected && <p className="dm-notice">Select a player token to add their spells and actions.</p>}
-          {selected && <><p className="dm-notice">Write each option in plain language. Limited options gray out automatically after their last use.</p>{selected.spells.map((spell) => { const spent = !spellAvailable(spell); return <article className={`spell-editor-card ${spent ? 'spent' : ''}`} key={spell.id}>
+          {selected && <><p className="dm-notice">Starter cards are loaded for each named player. They avoid fixed numbers until you confirm the character sheet; every card and use count remains editable.</p>{selected.spells.map((spell) => { const spent = !spellAvailable(spell); return <article className={`spell-editor-card ${spent ? 'spent' : ''}`} key={spell.id}>
             <div className="spell-editor-head"><input aria-label="Spell name" value={spell.name} onChange={(event) => updateSpell(selected.id, spell.id, { name: event.target.value })} /><span>{spell.recharge === 'unlimited' ? 'UNLIMITED' : `${spell.remainingUses} / ${spell.maxUses} LEFT`}</span></div>
             <div className="dm-grid"><label className="dm-field"><span>RANGE · FEET</span><input type="number" min="0" value={spell.rangeFeet} onChange={(event) => updateSpell(selected.id, spell.id, { rangeFeet: Math.max(0, Number(event.target.value)) })} /></label><label className="dm-field"><span>AREA SHAPE</span><select value={spell.areaKind} onChange={(event) => updateSpell(selected.id, spell.id, { areaKind: event.target.value as AreaKind })}>{areaKinds.map((kind) => <option key={kind}>{kind}</option>)}</select></label><label className="dm-field"><span>AREA SIZE · FEET</span><input type="number" min="0" value={spell.areaFeet} onChange={(event) => updateSpell(selected.id, spell.id, { areaFeet: Math.max(0, Number(event.target.value)) })} /></label><label className="dm-field"><span>VISUAL EFFECT</span><select value={spell.effectKind} onChange={(event) => updateSpell(selected.id, spell.id, { effectKind: event.target.value as EffectKind })}>{effectKinds.map((kind) => <option key={kind}>{kind}</option>)}</select></label></div>
             <label className="dm-field"><span>WHAT IT DOES · PLAIN LANGUAGE</span><textarea rows={2} value={spell.description} onChange={(event) => updateSpell(selected.id, spell.id, { description: event.target.value })} /></label><label className="dm-field"><span>WHAT THE PLAYER ROLLS OR DOES</span><textarea rows={2} value={spell.rollHelp} onChange={(event) => updateSpell(selected.id, spell.id, { rollHelp: event.target.value })} /></label>
             <div className="dm-grid"><label className="dm-field"><span>AVAILABILITY</span><select value={spell.recharge} onChange={(event) => updateSpell(selected.id, spell.id, { recharge: event.target.value as RechargeKind })}>{recharges.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}</select></label><label className="dm-field"><span>USES</span><input type="number" min="1" disabled={spell.recharge === 'unlimited'} value={spell.maxUses} onChange={(event) => { const maxUses = Math.max(1, Number(event.target.value)); updateSpell(selected.id, spell.id, { maxUses, remainingUses: Math.min(spell.remainingUses, maxUses) }); }} /></label><label className="dm-field"><span>REMAINING</span><input type="number" min="0" max={spell.maxUses} disabled={spell.recharge === 'unlimited'} value={spell.remainingUses} onChange={(event) => updateSpell(selected.id, spell.id, { remainingUses: clamp(Number(event.target.value), 0, spell.maxUses) })} /></label><label className="dm-field"><span>CAST OUTCOME</span><select value={outcome} onChange={(event) => setOutcome(event.target.value as SpellOutcome)}>{outcomes.map((value) => <option key={value}>{value}</option>)}</select></label></div>
             <div className="dm-actions"><button disabled={spent} onClick={() => { setPendingSpell({ tokenId: selected.id, spellId: spell.id }); setTool('spell'); setNotice(`CHOOSE A TARGET FOR ${spell.name.toUpperCase()}`); }}>CHOOSE TARGET AND CAST</button><button onClick={() => updateSpell(selected.id, spell.id, { remainingUses: spell.maxUses })}>RESTORE USES</button><button className="danger-button" onClick={() => removeSpell(spell.id)}>REMOVE</button></div>
-          </article>; })}<div className="dm-actions"><button className="dm-save" onClick={addSpell}>ADD SPELL OR ACTION</button><button onClick={() => rest('short')}>SHORT REST</button><button onClick={() => rest('long')}>LONG REST</button></div></>}
+          </article>; })}<div className="dm-actions"><button className="dm-save" onClick={addSpell}>ADD SPELL OR ACTION</button>{selected.kind === 'player' && <button onClick={restoreStarterActions}>RESTORE PLAYER STARTER CARDS</button>}<button onClick={() => rest('short')}>SHORT REST</button><button onClick={() => rest('long')}>LONG REST</button></div></>}
         </div></details>
       </aside>
       <section className="battle-stage"><header><div><span>{map.name}</span><strong>ROUND {map.round}</strong></div><p>{map.announcement}</p></header><BattleMapBoard state={map} interactive selectedTokenId={selectedId} hoverCell={hoverCell} measureStart={tool === 'measure' ? measureStart : null} moveStart={moveStart} rangeOrigin={pendingCaster ? { x: pendingCaster.x, y: pendingCaster.y } : null} rangeFeet={pendingSpellRecord?.rangeFeet || 0} onCellClick={handleCell} onCellHover={setHoverCell} onTokenClick={handleToken} /><footer><span>TOOL: {tool.toUpperCase()}</span><span>{active ? `ACTIVE: ${active.name.toUpperCase()}` : 'NO ACTIVE TURN'}</span><span>{pendingSpell ? 'SELECT A TARGET' : 'PLAYER VIEWS LIVE'}</span></footer></section>

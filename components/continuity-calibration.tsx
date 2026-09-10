@@ -1,13 +1,13 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { CalibrationQuestion, createMattPlayer, findPlayer, normalizeIdentity, PlayerConfig, Role, roles } from '@/app/player-config';
+import { CalibrationQuestion, findPlayer, normalizeIdentity, PlayerConfig, Role, roles } from '@/app/player-config';
 import type { CampaignPlayer, RoleStatus } from '@/lib/campaign-types';
-import { MATT_ASSESSMENT_STORAGE_KEY, MattAssessmentSave } from '@/lib/matt-assessment';
 import PlayerPage from './player-page';
 import RoleStatusBar, { defaultRoleStatus } from './role-status-bar';
+import SecretSelection from './secret-selection';
 
-type Screen = 'verify' | 'matt-required' | 'matched' | 'calibration' | 'complete' | 'player';
+type Screen = 'verify' | 'secret-selection' | 'matched' | 'calibration' | 'complete' | 'player';
 type Answers = Record<string, string>;
 const storageKey = (playerKey: string) => `wayfarer-continuity:${playerKey}:v1`;
 
@@ -34,7 +34,7 @@ function QuestionField({ question, value, onChange }: { question: CalibrationQue
   return <label className="short-answer"><span>YOUR RESPONSE</span><textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} placeholder="Type your answer here…" /></label>;
 }
 
-export default function ContinuityCalibration({ onMattAssessment, startMattFromSaved = false }: { onMattAssessment: () => void; startMattFromSaved?: boolean }) {
+export default function ContinuityCalibration() {
   const [screen, setScreen] = useState<Screen>('verify');
   const [name, setName] = useState('');
   const [role, setRole] = useState<Role | ''>('');
@@ -47,9 +47,8 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
   const [index, setIndex] = useState(0);
   const [copyStatus, setCopyStatus] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
-  const [confirmMattRetake, setConfirmMattRetake] = useState(false);
   const summaryRef = useRef<HTMLTextAreaElement>(null);
-  const isMatt = normalizeIdentity(name) === 'matt';
+  const secretIdentity = (['celis', 'matt'].includes(normalizeIdentity(name)) ? normalizeIdentity(name) : null) as 'celis' | 'matt' | null;
   const knownIdentity = findPlayer(name);
 
   const question = player?.questions[index];
@@ -62,28 +61,9 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
     return ['CONTINUITY CALIBRATION', '', `Player: ${record.name}`, `Role: ${'displayRole' in record ? record.displayRole : record.role}`, `Path: ${record.path}`, `Class: ${record.characterClass}${'subclass' in record && record.subclass !== 'UNCONFIRMED' ? ` — ${record.subclass}` : ''}`, `Species: ${record.species}`, `Manifestation: ${chosenManifestation}`, '', ...player.questions.flatMap((item, questionIndex) => [`${questionIndex + 1}. ${item.prompt}`, answers[item.id]?.trim() || '[No answer]', ''])].join('\n').trim();
   }, [answers, campaignPlayer, player]);
 
-  function restoreMattCalibration() {
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(MATT_ASSESSMENT_STORAGE_KEY) || 'null') as MattAssessmentSave | null;
-      if (!saved?.complete || !saved.result?.primary || !roles.includes(saved.result.primary)) return false;
-      const matt = createMattPlayer(saved.result.primary);
-      let restoredAnswers: Answers = {}; let restoredIndex = 0;
-      const calibration = JSON.parse(window.localStorage.getItem(storageKey(matt.key)) || 'null') as { version?: number; answers?: Answers; index?: number } | null;
-      if (calibration?.version === 1 && calibration.answers) { restoredAnswers = calibration.answers; restoredIndex = Math.min(Math.max(calibration.index || 0, 0), matt.questions.length - 1); }
-      setName('Matt'); setPlayer(matt); setCampaignPlayer(null); setAnswers(restoredAnswers); setIndex(restoredIndex); setError(''); setScreen('calibration');
-      return true;
-    } catch { return false; }
-  }
-
   useEffect(() => {
     fetch('/api/status', { cache: 'no-store' }).then((response) => response.ok ? response.json() as Promise<{ status?: RoleStatus }> : null).then((data) => data?.status && setRoleStatus(data.status)).catch(() => undefined);
   }, []);
-
-  useEffect(() => {
-    if (!startMattFromSaved) return;
-    const timer = window.setTimeout(() => restoreMattCalibration(), 0);
-    return () => window.clearTimeout(timer);
-  }, [startMattFromSaved]);
 
   useEffect(() => {
     if (!player || (screen !== 'calibration' && screen !== 'complete')) return;
@@ -92,11 +72,8 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
 
   async function verify(event: FormEvent) {
     event.preventDefault();
-    if (isMatt) {
-      if (restoreMattCalibration()) return;
-      setError(''); setScreen('matt-required'); return;
-    }
     if (!name.trim()) { setError('missing'); return; }
+    if (secretIdentity) { setError(''); setScreen('secret-selection'); return; }
     if (!knownIdentity) { setError('unknown'); return; }
     if (!affirmed || !name.trim() || !role) { setError('missing'); return; }
     const response = await fetch('/api/player/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name, role }) });
@@ -133,15 +110,9 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
     window.localStorage.removeItem(storageKey(player.key)); setAnswers({}); setIndex(0); setCopyStatus(''); setConfirmClear(false); setScreen('matched');
   }
 
-  function retakeMattAssessment() {
-    window.localStorage.removeItem(MATT_ASSESSMENT_STORAGE_KEY);
-    window.localStorage.removeItem(storageKey('matt'));
-    setConfirmMattRetake(false); setAnswers({}); setIndex(0); onMattAssessment();
-  }
-
   function openPlayerRecord() { if (campaignPlayer) setScreen('player'); }
 
-  const status = screen === 'verify' ? 'IDENTITY CONFIRMATION REQUIRED' : screen === 'matt-required' ? 'ASSESSMENT REQUIRED' : screen === 'matched' ? 'IDENTITY MATCH FOUND' : screen === 'calibration' ? `CALIBRATION: ${progress}%` : screen === 'player' ? 'PLAYER RECORD SYNCHRONIZED' : 'CALIBRATION COMPLETE';
+  const status = screen === 'verify' ? 'IDENTITY CONFIRMATION REQUIRED' : screen === 'secret-selection' ? 'PRIVATE RECORD OPEN' : screen === 'matched' ? 'IDENTITY MATCH FOUND' : screen === 'calibration' ? `CALIBRATION: ${progress}%` : screen === 'player' ? 'PLAYER RECORD SYNCHRONIZED' : 'CALIBRATION COMPLETE';
   return <main className="campaign-shell">
     <div className="scanlines" />
     <header className="trail-header"><span>◈ WAYFARER</span><span>CONTINUITY INDEX // v2.0</span></header>
@@ -155,21 +126,16 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
           <p className="eyebrow">THE INDEX // SELECTION ARCHIVE</p><h1>ROLES FOUND!</h1>
           <div className="index-decree"><p>The selection period has ended.</p><p>Further assessment is unnecessary.</p><p>Identity confirmation is required.</p></div>
           <label className="index-field"><span>FIRST NAME</span><input value={name} onChange={(event) => { setName(event.target.value.slice(0, 40)); setError(''); }} autoComplete="given-name" /></label>
-          {knownIdentity && !isMatt && <><label className="index-field"><span>RETURNED ROLE</span><select value={role} onChange={(event) => setRole(event.target.value as Role)}><option value="">Select your role</option>{roles.map((item) => <option key={item}>{item}</option>)}</select></label>
+          {knownIdentity && !secretIdentity && <><label className="index-field"><span>RETURNED ROLE</span><select value={role} onChange={(event) => setRole(event.target.value as Role)}><option value="">Select your role</option>{roles.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="affirm-row"><input type="checkbox" checked={affirmed} onChange={(event) => setAffirmed(event.target.checked)} /><span>I affirm that this is the role returned to me.</span></label></>}
           {error === 'missing' && <div className="identity-error"><strong>IDENTITY CONFIRMATION INCOMPLETE</strong><span>Enter your name, select a role, and affirm the record.</span></div>}
           {error === 'unknown' && <div className="identity-error"><strong>RECORD NOT FOUND</strong><span>No matching identity record was located.</span></div>}
           {error === 'conflict' && <div className="identity-error"><strong>RECORD CONFLICT</strong><span>The name exists.<br />The submitted role does not match.</span></div>}
           {error === 'storage' && <div className="identity-error"><strong>RECORD TEMPORARILY UNAVAILABLE</strong><span>Refresh the page and try the identity check again.</span></div>}
-          <button className="primary-button" type="submit" disabled={!name.trim() || Boolean(knownIdentity && !isMatt && !affirmed)}>{isMatt ? 'CONTINUE' : knownIdentity ? 'AGREE' : 'LOCATE RECORD'} <span>›</span></button>
+          <button className="primary-button" type="submit" disabled={!name.trim() || Boolean(knownIdentity && !secretIdentity && !affirmed)}>{secretIdentity ? 'CONTINUE' : knownIdentity ? 'AGREE' : 'LOCATE RECORD'} <span>›</span></button>
         </form>}
 
-        {screen === 'matt-required' && <section className="identity-match panel-fade">
-          <p className="eyebrow">IDENTITY FOUND // ROLE FIELD EMPTY</p><h2>ROLE NOT YET LOCATED.</h2>
-          <div className="index-decree"><p>ASSESSMENT REQUIRED.</p><p>The complete personality record must be generated before calibration can begin.</p></div>
-          <button className="primary-button" type="button" onClick={onMattAssessment}>BEGIN FULL ASSESSMENT <span>›</span></button>
-          <button className="clear-link" type="button" onClick={() => setScreen('verify')}>Return</button>
-        </section>}
+        {screen === 'secret-selection' && secretIdentity && <SecretSelection identity={secretIdentity} onReturn={() => setScreen('verify')} />}
 
         {screen === 'matched' && player && <section className="identity-match panel-fade">
           <p className="eyebrow">IDENTITY MATCH FOUND</p><h2>Welcome back, {player.name}.</h2>
@@ -184,7 +150,6 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
           <QuestionField question={question} value={currentAnswer} onChange={updateAnswer} />
           <div className="calibration-nav"><button type="button" className="back-button" onClick={() => index === 0 ? setScreen('matched') : setIndex((current) => current - 1)}>‹ BACK</button><button type="button" className="next-button" onClick={next} disabled={!currentAnswer.trim()}>{index === player.questions.length - 1 ? 'COMPLETE' : 'CONTINUE'} ›</button></div>
           <button type="button" className="clear-link" onClick={() => setConfirmClear(true)}>Clear My Answers</button>
-          {player.key === 'matt' && <button type="button" className="clear-link" onClick={() => setConfirmMattRetake(true)}>Retake Assessment</button>}
         </section>}
 
         {screen === 'complete' && player && <section className="complete-panel panel-fade">
@@ -192,17 +157,15 @@ export default function ContinuityCalibration({ onMattAssessment, startMattFromS
           <div className="index-decree"><p>These answers will not determine your decisions.</p><p>They will help the Index determine which decisions will matter.</p></div>
           <button type="button" className="copy-answers" onClick={copyAnswers}>COPY ANSWERS <span>⧉</span></button>{copyStatus && <p className="copy-status" role="status">{copyStatus}</p>}
           <label className="summary-box"><span>PLAIN-TEXT CALIBRATION RECORD</span><textarea ref={summaryRef} value={summary} readOnly rows={15} onFocus={(event) => event.currentTarget.select()} /></label>
-          {player.key !== 'matt' && <button type="button" className="record-link" onClick={openPlayerRecord}>CONTINUE TO PERSONAL RECORD ›</button>}
+          <button type="button" className="record-link" onClick={openPlayerRecord}>CONTINUE TO PERSONAL RECORD ›</button>
           <button type="button" className="clear-link" onClick={() => setConfirmClear(true)}>Clear My Answers</button>
-          {player.key === 'matt' && <button type="button" className="clear-link" onClick={() => setConfirmMattRetake(true)}>Retake Assessment</button>}
         </section>}
 
         {screen === 'player' && campaignPlayer && <PlayerPage initialPlayer={campaignPlayer} initialStatus={roleStatus} />}
 
         {confirmClear && <div className="clear-confirm" role="alertdialog" aria-modal="true" aria-labelledby="clear-title"><strong id="clear-title">CLEAR THIS DEVICE’S CALIBRATION?</strong><p>This removes every saved answer for {player?.name}. It cannot be undone.</p><div><button type="button" onClick={() => setConfirmClear(false)}>KEEP ANSWERS</button><button type="button" onClick={clearAnswers}>CLEAR ANSWERS</button></div></div>}
-        {confirmMattRetake && <div className="clear-confirm" role="alertdialog" aria-modal="true" aria-labelledby="matt-retake-title"><strong id="matt-retake-title">REPLACE MATT’S SAVED RESULT?</strong><p>The full assessment will begin again. Completing it will replace the archetype result saved on this browser and clear the current calibration draft.</p><div><button type="button" onClick={() => setConfirmMattRetake(false)}>KEEP RESULT</button><button type="button" onClick={retakeMattAssessment}>RETAKE ASSESSMENT</button></div></div>}
       </section>
     </div>
-    <footer className="status-bar"><span>ROLES LOCATED: 4 / 5</span><span>{screen === 'matt-required' ? 'ASSESSMENT: REQUIRED' : 'ASSESSMENT: CLOSED'}</span><span className="status-note">{status}</span></footer>
+    <footer className="status-bar"><span>ROLES LOCATED: 4 / 5</span><span>ASSESSMENT: CLOSED</span><span className="status-note">{status}</span></footer>
   </main>;
 }

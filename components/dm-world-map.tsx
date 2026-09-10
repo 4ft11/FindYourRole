@@ -13,13 +13,13 @@ const columns = 24;
 const rows = 16;
 const storageKey = 'wayfarer-solenian-empire-map-v1';
 const terrains: { value: Terrain; label: string; color: string }[] = [
-  { value: 'water', label: 'Water', color: '#253f4b' },
-  { value: 'plains', label: 'Plains', color: '#817d50' },
-  { value: 'forest', label: 'Forest', color: '#355844' },
-  { value: 'mountains', label: 'Mountains', color: '#68655e' },
-  { value: 'desert', label: 'Desert', color: '#a17b47' },
-  { value: 'marsh', label: 'Marsh', color: '#4d665c' },
-  { value: 'snow', label: 'Snow', color: '#a8aca3' },
+  { value: 'water', label: 'Water', color: '#718b8c' },
+  { value: 'plains', label: 'Plains', color: '#c3ae7d' },
+  { value: 'forest', label: 'Forest', color: '#667757' },
+  { value: 'mountains', label: 'Mountains', color: '#887d70' },
+  { value: 'desert', label: 'Desert', color: '#c69a62' },
+  { value: 'marsh', label: 'Marsh', color: '#708276' },
+  { value: 'snow', label: 'Snow', color: '#c8c1b2' },
 ];
 const markerKinds: { value: MarkerKind; label: string }[] = [
   { value: 'capital', label: 'Capital' }, { value: 'city', label: 'City' }, { value: 'village', label: 'Village' },
@@ -85,25 +85,71 @@ export default function DmWorldMap() {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext('2d'); if (!ctx) return;
     const w = canvas.width; const h = canvas.height; const cellW = w / columns; const cellH = h / rows;
-    ctx.fillStyle = '#151713'; ctx.fillRect(0, 0, w, h);
+    const at = (x: number, y: number) => x < 0 || y < 0 || x >= columns || y >= rows ? 'water' : map.cells[y * columns + x];
+
+    // A muted illustrated-atlas surface. The editor still uses cells beneath it,
+    // but the exported player map no longer looks like a tile painter.
+    ctx.fillStyle = '#6f8582'; ctx.fillRect(0, 0, w, h);
+    const wash = ctx.createRadialGradient(w * .48, h * .42, 40, w * .48, h * .42, w * .72);
+    wash.addColorStop(0, 'rgba(231,214,170,.10)'); wash.addColorStop(1, 'rgba(23,42,44,.30)');
+    ctx.fillStyle = wash; ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = .16;
+    for (let i = 0; i < 360; i++) {
+      const x = (i * 83) % w; const y = (i * 47) % h; const radius = 1 + (i % 4);
+      ctx.fillStyle = i % 3 ? '#f2dfae' : '#253f3e'; ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
     map.cells.forEach((cell, index) => {
       const x = index % columns; const y = Math.floor(index / columns);
-      ctx.fillStyle = terrains.find((item) => item.value === cell)?.color || '#333'; ctx.fillRect(x * cellW, y * cellH, cellW + .5, cellH + .5);
-      ctx.globalAlpha = .15; ctx.fillStyle = (x + y) % 2 ? '#000' : '#fff'; ctx.fillRect(x * cellW, y * cellH, cellW, cellH); ctx.globalAlpha = 1;
-      if (cell === 'forest') { ctx.fillStyle = '#172f25'; ctx.beginPath(); ctx.moveTo((x + .5) * cellW, (y + .2) * cellH); ctx.lineTo((x + .25) * cellW, (y + .78) * cellH); ctx.lineTo((x + .75) * cellW, (y + .78) * cellH); ctx.fill(); }
-      if (cell === 'mountains') { ctx.strokeStyle = '#2b2b29'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo((x + .12) * cellW, (y + .82) * cellH); ctx.lineTo((x + .48) * cellW, (y + .22) * cellH); ctx.lineTo((x + .86) * cellW, (y + .82) * cellH); ctx.stroke(); }
-      if (cell === 'water') { ctx.strokeStyle = '#49646e'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo((x + .15) * cellW, (y + .55) * cellH); ctx.quadraticCurveTo((x + .4) * cellW, (y + .35) * cellH, (x + .65) * cellW, (y + .55) * cellH); ctx.stroke(); }
+      if (cell !== 'water') {
+        ctx.fillStyle = terrains.find((item) => item.value === cell)?.color || '#b6a273';
+        ctx.beginPath(); ctx.roundRect(x * cellW - 3, y * cellH - 3, cellW + 7, cellH + 7, 11); ctx.fill();
+        ctx.globalAlpha = .11; ctx.fillStyle = (x * 7 + y * 3) % 2 ? '#fff4cf' : '#4c3a28'; ctx.fillRect(x * cellW, y * cellH, cellW, cellH); ctx.globalAlpha = 1;
+      }
+      const cx = (x + .5) * cellW; const cy = (y + .5) * cellH;
+      if (cell === 'forest' && (x + y) % 2 === 0) {
+        ctx.fillStyle = '#344c3a'; ctx.strokeStyle = '#28382d'; ctx.lineWidth = 1.6;
+        [-9, 8].forEach((offset, treeIndex) => { ctx.beginPath(); ctx.moveTo(cx + offset, cy - 15 + treeIndex * 4); ctx.lineTo(cx + offset - 10, cy + 10); ctx.lineTo(cx + offset + 10, cy + 10); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+      }
+      if (cell === 'mountains') {
+        ctx.strokeStyle = '#554b43'; ctx.fillStyle = '#a99b84'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx - 23, cy + 16); ctx.lineTo(cx - 4, cy - 17); ctx.lineTo(cx + 12, cy + 16); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 1, cy + 16); ctx.lineTo(cx + 18, cy - 8); ctx.lineTo(cx + 29, cy + 16); ctx.stroke();
+      }
+      if (cell === 'desert' && (x + y) % 3 === 0) { ctx.strokeStyle = '#8e6846'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy + 7, 20, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
+      if (cell === 'marsh') { ctx.strokeStyle = '#3f5f57'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(cx - 17, cy + 8); ctx.quadraticCurveTo(cx - 8, cy, cx, cy + 8); ctx.quadraticCurveTo(cx + 9, cy + 16, cx + 18, cy + 8); ctx.stroke(); }
+      if (cell === 'snow' && (x + y) % 2 === 0) { ctx.fillStyle = 'rgba(239,234,213,.62)'; ctx.beginPath(); ctx.arc(cx, cy, 13, 0, Math.PI * 2); ctx.fill(); }
+      if (cell === 'water' && (x * 3 + y) % 4 === 0) { ctx.strokeStyle = 'rgba(214,222,200,.35)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(cx - 18, cy); ctx.quadraticCurveTo(cx - 8, cy - 6, cx, cy); ctx.quadraticCurveTo(cx + 8, cy + 6, cx + 18, cy); ctx.stroke(); }
     });
-    map.lines.forEach((line) => { ctx.strokeStyle = line.kind === 'river' ? '#73a5b2' : '#c6a669'; ctx.lineWidth = line.kind === 'river' ? 4 : 3; ctx.setLineDash(line.kind === 'road' ? [8, 6] : []); ctx.beginPath(); ctx.moveTo((line.from[0] + .5) * cellW, (line.from[1] + .5) * cellH); ctx.lineTo((line.to[0] + .5) * cellW, (line.to[1] + .5) * cellH); ctx.stroke(); ctx.setLineDash([]); });
+
+    // Ink the coastline after the terrain washes so the land reads as one mass.
+    ctx.strokeStyle = '#564a39'; ctx.lineWidth = 2.4;
+    map.cells.forEach((cell, index) => {
+      if (cell === 'water') return;
+      const x = index % columns; const y = Math.floor(index / columns); const left = x * cellW; const top = y * cellH;
+      if (at(x, y - 1) === 'water') { ctx.beginPath(); ctx.moveTo(left, top); ctx.quadraticCurveTo(left + cellW * .45, top - 5, left + cellW, top); ctx.stroke(); }
+      if (at(x + 1, y) === 'water') { ctx.beginPath(); ctx.moveTo(left + cellW, top); ctx.quadraticCurveTo(left + cellW + 5, top + cellH * .5, left + cellW, top + cellH); ctx.stroke(); }
+      if (at(x, y + 1) === 'water') { ctx.beginPath(); ctx.moveTo(left + cellW, top + cellH); ctx.quadraticCurveTo(left + cellW * .5, top + cellH + 5, left, top + cellH); ctx.stroke(); }
+      if (at(x - 1, y) === 'water') { ctx.beginPath(); ctx.moveTo(left, top + cellH); ctx.quadraticCurveTo(left - 5, top + cellH * .5, left, top); ctx.stroke(); }
+    });
+
+    map.lines.forEach((line) => {
+      const fromX = (line.from[0] + .5) * cellW; const fromY = (line.from[1] + .5) * cellH; const toX = (line.to[0] + .5) * cellW; const toY = (line.to[1] + .5) * cellH;
+      ctx.strokeStyle = line.kind === 'river' ? '#506f76' : '#745a3f'; ctx.lineWidth = line.kind === 'river' ? 5 : 2.4; ctx.setLineDash(line.kind === 'road' ? [4, 6] : []);
+      ctx.beginPath(); ctx.moveTo(fromX, fromY); ctx.bezierCurveTo(fromX + (toX - fromX) * .35, fromY - 10, fromX + (toX - fromX) * .65, toY + 10, toX, toY); ctx.stroke(); ctx.setLineDash([]);
+    });
     map.markers.forEach((marker) => {
       const x = (marker.x + .5) * cellW; const y = (marker.y + .5) * cellH; const selected = marker.id === selectedId;
-      ctx.fillStyle = selected ? '#f1d889' : '#e5cf9a'; ctx.strokeStyle = '#1b1710'; ctx.lineWidth = 2;
-      if (marker.kind === 'label') { ctx.font = 'bold 17px Georgia'; ctx.textAlign = 'center'; ctx.fillText(marker.name.toUpperCase(), x, y); return; }
-      ctx.beginPath(); if (marker.kind === 'capital') { ctx.arc(x, y, 9, 0, Math.PI * 2); } else { ctx.rect(x - 6, y - 6, 12, 12); } ctx.fill(); ctx.stroke();
-      ctx.font = 'bold 13px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = '#f1e1b5'; ctx.strokeStyle = '#171812'; ctx.lineWidth = 4; ctx.strokeText(marker.name, x, y + 24); ctx.fillText(marker.name, x, y + 24);
+      if (marker.kind === 'label') { ctx.font = 'bold 18px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(65,48,33,.72)'; ctx.fillText(marker.name.toUpperCase().split('').join(' '), x, y); return; }
+      ctx.fillStyle = selected ? '#f0cf76' : '#ead9aa'; ctx.strokeStyle = '#30271d'; ctx.lineWidth = selected ? 4 : 2;
+      ctx.beginPath(); ctx.arc(x, y, marker.kind === 'capital' ? 11 : 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#352a1e'; ctx.font = `bold ${marker.kind === 'capital' ? 14 : 11}px Georgia`; ctx.textAlign = 'center';
+      const glyph = marker.kind === 'capital' ? '✦' : marker.kind === 'fort' ? '▰' : marker.kind === 'ruin' ? '×' : marker.kind === 'port' ? '≈' : '•'; ctx.fillText(glyph, x, y + 4);
+      ctx.font = 'bold 14px Georgia'; ctx.fillStyle = '#33281d'; ctx.strokeStyle = 'rgba(232,216,172,.82)'; ctx.lineWidth = 5; ctx.strokeText(marker.name, x, y + 27); ctx.fillText(marker.name, x, y + 27);
     });
-    ctx.strokeStyle = 'rgba(231,205,143,.14)'; ctx.lineWidth = 1; for (let x = 0; x <= columns; x++) { ctx.beginPath(); ctx.moveTo(x * cellW, 0); ctx.lineTo(x * cellW, h); ctx.stroke(); } for (let y = 0; y <= rows; y++) { ctx.beginPath(); ctx.moveTo(0, y * cellH); ctx.lineTo(w, y * cellH); ctx.stroke(); }
-    ctx.strokeStyle = '#c9a960'; ctx.lineWidth = 7; ctx.strokeRect(4, 4, w - 8, h - 8);
+    ctx.strokeStyle = '#372e24'; ctx.lineWidth = 10; ctx.strokeRect(7, 7, w - 14, h - 14);
+    ctx.strokeStyle = 'rgba(235,214,158,.68)'; ctx.lineWidth = 2; ctx.strokeRect(15, 15, w - 30, h - 30);
   }, [map, selectedId]);
 
   function cellFromEvent(event: PointerEvent<HTMLCanvasElement>) {
@@ -130,7 +176,7 @@ export default function DmWorldMap() {
     <div className="dm-section-heading"><div><p>THE INDEX // IMPERIAL CARTOGRAPHY</p><h2>SOLENIAN EMPIRE MAP STUDIO</h2></div><span>{notice}</span></div>
     <div className="world-map-layout">
       <aside className="world-map-controls">
-        <div className="dm-notice">Paint the land, place named locations, and connect them with roads or rivers. Your atlas stays on this device until you export it.</div>
+        <div className="dm-notice">Shape an illustrated parchment atlas, place named locations, and connect them with roads or rivers. The invisible survey cells keep editing easy; they do not appear on the player map.</div>
         <label className="dm-field"><span>MAP TITLE</span><input value={map.title} onChange={(event) => setMap({ ...map, title: event.target.value })} /></label>
         <label className="dm-field"><span>ERA OR SUBTITLE</span><input value={map.subtitle} onChange={(event) => setMap({ ...map, subtitle: event.target.value })} /></label>
         <fieldset className="world-toolset"><legend>DRAWING TOOL</legend><div className="world-mode-buttons">{(['paint', 'place', 'road', 'river', 'erase'] as MapMode[]).map((item) => <button key={item} className={mode === item ? 'active' : ''} onClick={() => { setMode(item); setLineStart(null); }}>{item.toUpperCase()}</button>)}</div></fieldset>
@@ -142,7 +188,7 @@ export default function DmWorldMap() {
         <div className="dm-actions"><button onClick={downloadPng}>DOWNLOAD PLAYER MAP</button><button onClick={exportJson}>EXPORT EDITABLE BACKUP</button><button onClick={() => importRef.current?.click()}>IMPORT BACKUP</button></div>
         <input ref={importRef} className="visually-hidden" type="file" accept="application/json,.json" onChange={importJson} />
       </aside>
-      <section className="world-map-stage"><header><span>{map.title}</span><small>{map.subtitle}</small></header><canvas ref={canvasRef} width="1200" height="800" aria-label="Editable map of the Solenian Empire" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={() => setPainting(false)} onPointerCancel={() => setPainting(false)} /><footer><span>24 × 16 IMPERIAL SURVEY GRID</span><span>{mode.toUpperCase()} TOOL ACTIVE</span><span>{map.markers.length} LOCATIONS RECORDED</span></footer></section>
+      <section className="world-map-stage"><header><span>{map.title}</span><small>{map.subtitle}</small></header><canvas ref={canvasRef} width="1200" height="800" aria-label="Editable illustrated map of the Solenian Empire" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={() => setPainting(false)} onPointerCancel={() => setPainting(false)} /><footer><span>ILLUSTRATED IMPERIAL ATLAS</span><span>{mode.toUpperCase()} TOOL ACTIVE</span><span>{map.markers.length} LOCATIONS RECORDED</span></footer></section>
     </div>
   </section>;
 }

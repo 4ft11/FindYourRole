@@ -1,6 +1,6 @@
 'use client';
 
-export const recipients = ['Entire Party', 'Ariel', 'Noah', 'Michael', 'Chris', 'Unknown User'] as const;
+export const recipients = ['Entire Party', 'Ariel', 'Noah', 'Michael', 'Chris', 'Celis', 'Matt', 'Unknown User'] as const;
 export const windowTypes = ['System', 'Quest', 'Quest Updated', 'Guidance', 'Help', 'Memory Recovered', 'Warning', 'Error', 'Achievement'] as const;
 export type WindowType = (typeof windowTypes)[number];
 export type Recipient = (typeof recipients)[number];

@@ -573,8 +573,6 @@ function OriginalArchetypeQuiz({ assignedPlayerName, onContinueCalibration }: { 
 }
 
 export default function Home() {
-  const [mode, setMode] = useState<'entry' | 'matt-assessment' | 'matt-calibration'>('entry');
   if (ORIGINAL_ARCHETYPE_QUIZ_ENABLED) return <OriginalArchetypeQuiz />;
-  if (mode === 'matt-assessment') return <OriginalArchetypeQuiz assignedPlayerName="Matt" onContinueCalibration={() => setMode('matt-calibration')} />;
-  return <ContinuityCalibration onMattAssessment={() => setMode('matt-assessment')} startMattFromSaved={mode === 'matt-calibration'} />;
+  return <ContinuityCalibration />;
 }

@@ -42,6 +42,8 @@ The DM Creation Studio at `/dm-ui` is a browser-local creative tool for system w
 
 Spell cards use plain-language descriptions and roll instructions. Limited spells gray out after their final use. Short Rest and Long Rest controls restore the appropriate uses. Select an outcome such as hit, missed, saved, resisted, countered, or failed before choosing a target.
 
+For a live session, use the four-step guide at the top of **Battle Maps**. Keep **Player Preview** visible while setting up—it is the exact TV/Discord layout. **Test Player Display** sends a labeled radiant effect without spending a player use. Each real effect remains visible for about six seconds, includes the spell and outcome label, and can be replayed without spending another use. **Preview Effect · No Cost** tests an individual spell card before combat.
+
 Ariel, Noah, Michael, and Chris now begin with editable starter action cards based only on the class information already confirmed in the site. Existing browser-saved maps with empty player lists receive those cards automatically. Because character levels and final sheets are not stored here, confirm the use counts and numerical rules against each finished sheet; the **Restore Player Starter Cards** button can replace a player’s edited list with the starter set.
 
 Maps save in that browser. Use **Export Backup** before changing computers or clearing browser data, then use **Import Backup** on the other computer.
@@ -51,3 +53,7 @@ Maps save in that browser. Use **Export Backup** before changing computers or cl
 Open `/dm-ui` and choose **Empire Map**. Paint terrain, place and rename settlements, forts, ports, ruins, and regions, then draw roads or rivers between spaces. The editor uses invisible cells for easy painting, while the player-facing map renders as an illustrated parchment atlas with inked coastlines and no visible square grid. The atlas saves locally. **Download Player Map** creates a PNG for Discord or a television; **Export Editable Backup** preserves a JSON file that can be restored later.
 
 No campaign data or DM drafts are sent to ChatGPT, and the website does not create ChatGPT share links.
+
+## Campaign-day visual state
+
+The public Index and DM surface now reveal a damaged celestial underlayer: a restrained night sky with fractured signal slips beneath the existing medieval interface. Reduced-motion mode disables the intermittent signal movement while preserving the star layer.

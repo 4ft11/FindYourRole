@@ -34,7 +34,7 @@ function QuestionField({ question, value, onChange }: { question: CalibrationQue
   return <label className="short-answer"><span>YOUR RESPONSE</span><textarea value={value} onChange={(event) => onChange(event.target.value)} rows={5} placeholder="Type your answer here…" /></label>;
 }
 
-export default function ContinuityCalibration() {
+export default function ContinuityCalibration({ onExit }: { onExit?: () => void }) {
   const [screen, setScreen] = useState<Screen>('verify');
   const [name, setName] = useState('');
   const [role, setRole] = useState<Role | ''>('');
@@ -136,6 +136,7 @@ export default function ContinuityCalibration() {
           {error === 'conflict' && <div className="identity-error"><strong>RECORD CONFLICT</strong><span>The name exists.<br />The submitted role does not match.</span></div>}
           {error === 'storage' && <div className="identity-error"><strong>RECORD TEMPORARILY UNAVAILABLE</strong><span>Refresh the page and try the identity check again.</span></div>}
           <button className="primary-button" type="submit" disabled={!name.trim() || Boolean(knownIdentity && !secretIdentity && !affirmed)}>{secretIdentity ? 'CONTINUE' : knownIdentity ? 'AGREE' : 'LOCATE RECORD'} <span>›</span></button>
+          {onExit && <button className="hub-return-link" type="button" onClick={onExit}>‹ RETURN TO PARTY STATUS</button>}
         </form>}
 
         {screen === 'matched' && player && <section className="identity-match panel-fade">

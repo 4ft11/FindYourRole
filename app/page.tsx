@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import ContinuityCalibration from '@/components/continuity-calibration';
+import ShutdownScreen from '@/components/shutdown-screen';
 import type { Role } from './player-config';
 import { MATT_ASSESSMENT_STORAGE_KEY, MattAssessmentSave } from '@/lib/matt-assessment';
 import { ORIGINAL_ARCHETYPE_QUIZ_ENABLED } from './feature-flags';
@@ -574,5 +574,5 @@ function OriginalArchetypeQuiz({ assignedPlayerName, onContinueCalibration }: { 
 
 export default function Home() {
   if (ORIGINAL_ARCHETYPE_QUIZ_ENABLED) return <OriginalArchetypeQuiz />;
-  return <ContinuityCalibration />;
+  return <ShutdownScreen />;
 }

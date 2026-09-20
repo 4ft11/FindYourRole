@@ -2,7 +2,8 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import BattleMapBoard from './battle-map-board';
-import { AreaKind, BattleMapState, battleMapChannel, battleMapStorageKey, defaultBattleMap, EffectKind, GridKind, mapDistance, MapSpell, MapToken, newId, RechargeKind, SpellOutcome, spellAvailable, starterActionsForPlayer, TokenKind } from '@/lib/battle-map-types';
+import { BattlePlayerSurface } from './battle-player-view';
+import { AreaKind, BattleMapState, battleMapChannel, battleMapStorageKey, defaultBattleMap, EffectKind, GridKind, mapDistance, MapEffect, MapSpell, MapToken, newId, RechargeKind, SpellOutcome, spellAvailable, starterActionsForPlayer, TokenKind } from '@/lib/battle-map-types';
 
 type Cell = { x: number; y: number };
 type Tool = 'select' | 'move' | 'measure' | 'spell';
@@ -39,7 +40,10 @@ export default function DmBattleMap() {
   const [pendingSpell, setPendingSpell] = useState<{ tokenId: string; spellId: string } | null>(null);
   const [outcome, setOutcome] = useState<SpellOutcome>('hit');
   const [notice, setNotice] = useState('MAP SAVES AUTOMATICALLY ON THIS DEVICE');
+  const [showPlayerPreview, setShowPlayerPreview] = useState(true);
+  const [lastEffect, setLastEffect] = useState<MapEffect | null>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
+  const effectTimerRef = useRef<number | null>(null);
   const mapFileRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +53,7 @@ export default function DmBattleMap() {
       setReady(true);
     }, 0);
     channelRef.current = 'BroadcastChannel' in window ? new BroadcastChannel(battleMapChannel) : null;
-    return () => { window.clearTimeout(timer); channelRef.current?.close(); };
+    return () => { window.clearTimeout(timer); if (effectTimerRef.current) window.clearTimeout(effectTimerRef.current); channelRef.current?.close(); };
   }, []);
 
   useEffect(() => {
@@ -86,6 +90,14 @@ export default function DmBattleMap() {
     setSelectedId(token.id);
   }
 
+  function displayEffect(effect: MapEffect, announcement = effect.label) {
+    if (effectTimerRef.current) window.clearTimeout(effectTimerRef.current);
+    const visibleEffect = { ...effect, id: newId('effect') };
+    setLastEffect(visibleEffect);
+    setMap((current) => ({ ...current, effect: visibleEffect, announcement }));
+    effectTimerRef.current = window.setTimeout(() => setMap((current) => ({ ...current, effect: null })), 6200);
+  }
+
   function castSpell(cell: Cell) {
     if (!pendingSpell) return;
     const caster = map.tokens.find((token) => token.id === pendingSpell.tokenId);
@@ -94,9 +106,32 @@ export default function DmBattleMap() {
     const distance = mapDistance(caster, cell, map.feetPerCell);
     if (spell.rangeFeet > 0 && distance > spell.rangeFeet) { setNotice(`OUT OF RANGE // ${distance} FT AWAY // ${spell.rangeFeet} FT MAXIMUM`); return; }
     const label = `${spell.name.toUpperCase()} // ${outcome.toUpperCase()}`;
-    setMap((current) => ({ ...current, announcement: label, effect: { id: newId('effect'), casterName: caster.name, spellName: spell.name, effectKind: spell.effectKind, outcome, areaKind: spell.areaKind, areaFeet: spell.areaFeet, x: cell.x, y: cell.y, label }, tokens: current.tokens.map((token) => token.id === caster.id ? { ...token, spells: token.spells.map((item) => item.id === spell.id && item.recharge !== 'unlimited' ? { ...item, remainingUses: Math.max(0, item.remainingUses - 1) } : item) } : token) }));
-    setNotice(label); setPendingSpell(null); setTool('select');
-    window.setTimeout(() => setMap((current) => ({ ...current, effect: null })), 2400);
+    const effect: MapEffect = { id: newId('effect'), casterName: caster.name, spellName: spell.name, effectKind: spell.effectKind, outcome, areaKind: spell.areaKind, areaFeet: Math.max(spell.areaFeet, map.feetPerCell * 1.5), x: cell.x, y: cell.y, label };
+    if (effectTimerRef.current) window.clearTimeout(effectTimerRef.current);
+    setLastEffect(effect);
+    setMap((current) => ({ ...current, announcement: label, effect, tokens: current.tokens.map((token) => token.id === caster.id ? { ...token, spells: token.spells.map((item) => item.id === spell.id && item.recharge !== 'unlimited' ? { ...item, remainingUses: Math.max(0, item.remainingUses - 1) } : item) } : token) }));
+    effectTimerRef.current = window.setTimeout(() => setMap((current) => ({ ...current, effect: null })), 6200);
+    setNotice(`${label} // VISIBLE TO PLAYERS FOR 6 SECONDS`); setPendingSpell(null); setTool('select');
+  }
+
+  function previewSpell(spell: MapSpell) {
+    if (!selected) return;
+    const label = `${spell.name.toUpperCase()} // EFFECT PREVIEW`;
+    displayEffect({ id: newId('effect'), casterName: selected.name, spellName: spell.name, effectKind: spell.effectKind, outcome, areaKind: spell.areaKind, areaFeet: Math.max(spell.areaFeet, map.feetPerCell * 1.5), x: selected.x, y: selected.y, label }, label);
+    setNotice('EFFECT PREVIEW IS LIVE // NO USE WAS SPENT');
+  }
+
+  function testPlayerDisplay() {
+    const center = { x: Math.floor(map.columns / 2), y: Math.floor(map.rows / 2) };
+    const label = 'PLAYER DISPLAY TEST // VISIBLE';
+    displayEffect({ id: newId('effect'), casterName: 'The Index', spellName: 'Display Test', effectKind: 'radiant', outcome: 'hit', areaKind: 'circle', areaFeet: map.feetPerCell * 3, ...center, label }, label);
+    setNotice('CHECK THE PLAYER PREVIEW BELOW OR THE PLAYER VIEW TAB');
+  }
+
+  function replayLastEffect() {
+    if (!lastEffect) return;
+    displayEffect(lastEffect, `${lastEffect.spellName.toUpperCase()} // REPLAY`);
+    setNotice('LAST EFFECT REPLAYED // NO USE WAS SPENT');
   }
 
   function addToken() {
@@ -142,11 +177,12 @@ export default function DmBattleMap() {
 
   return <section className="battle-studio">
     <div className="dm-section-heading"><div><p>THE INDEX // TACTICAL PROJECTION</p><h2>BATTLE MAP STUDIO</h2></div><span>{notice}</span></div>
-    <div className="battle-quickstart"><strong>HYBRID SESSION SETUP</strong><span>Open Player View twice. Put one window on the television and share the other window in Discord. Keep this DM tab private.</span></div>
+    <div className="battle-quickstart"><strong>CAMPAIGN-DAY QUICK START</strong><ol><li><b>Open Player View</b> and put that tab on the TV or Discord stream.</li><li><b>Select a character</b> from Tokens and Turn.</li><li><b>Move</b> them with Move Token, or choose an action and then its target.</li><li><b>Check Player Preview</b> below—what appears there is what your players see.</li></ol></div>
     <div className="battle-toolbar">
       <button className={tool === 'select' ? 'active' : ''} onClick={() => setTool('select')}>SELECT</button><button className={tool === 'move' ? 'active' : ''} onClick={() => setTool('move')} disabled={!selected}>MOVE TOKEN</button><button className={tool === 'measure' ? 'active' : ''} onClick={() => { setTool('measure'); setMeasureStart(null); }}>MEASURE</button>
-      <button onClick={() => window.open('/player-view', '_blank', 'noopener')}>OPEN PLAYER VIEW</button><button onClick={nextTurn}>NEXT TURN</button><button onClick={newRound}>NEW ROUND</button>
+      <button onClick={() => window.open('/player-view', '_blank', 'noopener')}>OPEN PLAYER VIEW</button><button onClick={() => setShowPlayerPreview((current) => !current)}>{showPlayerPreview ? 'HIDE' : 'SHOW'} PLAYER PREVIEW</button><button onClick={testPlayerDisplay}>TEST PLAYER DISPLAY</button>{lastEffect && <button onClick={replayLastEffect}>REPLAY LAST EFFECT</button>}<button onClick={nextTurn}>NEXT TURN</button><button onClick={newRound}>NEW ROUND</button>
     </div>
+    <div className={`battle-mode-guide ${pendingSpell ? 'casting' : ''}`} role="status"><strong>{pendingSpell ? `CASTING: ${pendingSpellRecord?.name || 'ACTION'}` : tool === 'move' ? `MOVING: ${selected?.name || 'SELECT A TOKEN'}` : tool === 'measure' ? 'MEASURE: CHOOSE A START SPACE, THEN AN END SPACE' : 'READY: SELECT A TOKEN OR CHOOSE A TOOL'}</strong><span>{pendingSpell ? 'Now click a token or a space on the map. The range circle shows how far the action can reach.' : tool === 'move' ? 'Click the destination space. The movement total updates automatically.' : tool === 'measure' ? 'Hover after choosing the first space to see distance in feet.' : 'Nothing will move or spend a use while Select is active.'}</span>{pendingSpell && <button onClick={() => { setPendingSpell(null); setTool('select'); setNotice('CAST CANCELLED // NO USE WAS SPENT'); }}>CANCEL CAST</button>}</div>
     <div className="battle-layout">
       <aside className="battle-controls">
         <details open><summary>MAP SETUP</summary><div className="battle-control-body">
@@ -167,12 +203,13 @@ export default function DmBattleMap() {
             <div className="spell-editor-head"><input aria-label="Spell name" value={spell.name} onChange={(event) => updateSpell(selected.id, spell.id, { name: event.target.value })} /><span>{spell.recharge === 'unlimited' ? 'UNLIMITED' : `${spell.remainingUses} / ${spell.maxUses} LEFT`}</span></div>
             <div className="dm-grid"><label className="dm-field"><span>RANGE · FEET</span><input type="number" min="0" value={spell.rangeFeet} onChange={(event) => updateSpell(selected.id, spell.id, { rangeFeet: Math.max(0, Number(event.target.value)) })} /></label><label className="dm-field"><span>AREA SHAPE</span><select value={spell.areaKind} onChange={(event) => updateSpell(selected.id, spell.id, { areaKind: event.target.value as AreaKind })}>{areaKinds.map((kind) => <option key={kind}>{kind}</option>)}</select></label><label className="dm-field"><span>AREA SIZE · FEET</span><input type="number" min="0" value={spell.areaFeet} onChange={(event) => updateSpell(selected.id, spell.id, { areaFeet: Math.max(0, Number(event.target.value)) })} /></label><label className="dm-field"><span>VISUAL EFFECT</span><select value={spell.effectKind} onChange={(event) => updateSpell(selected.id, spell.id, { effectKind: event.target.value as EffectKind })}>{effectKinds.map((kind) => <option key={kind}>{kind}</option>)}</select></label></div>
             <label className="dm-field"><span>WHAT IT DOES · PLAIN LANGUAGE</span><textarea rows={2} value={spell.description} onChange={(event) => updateSpell(selected.id, spell.id, { description: event.target.value })} /></label><label className="dm-field"><span>WHAT THE PLAYER ROLLS OR DOES</span><textarea rows={2} value={spell.rollHelp} onChange={(event) => updateSpell(selected.id, spell.id, { rollHelp: event.target.value })} /></label>
-            <div className="dm-grid"><label className="dm-field"><span>AVAILABILITY</span><select value={spell.recharge} onChange={(event) => updateSpell(selected.id, spell.id, { recharge: event.target.value as RechargeKind })}>{recharges.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}</select></label><label className="dm-field"><span>USES</span><input type="number" min="1" disabled={spell.recharge === 'unlimited'} value={spell.maxUses} onChange={(event) => { const maxUses = Math.max(1, Number(event.target.value)); updateSpell(selected.id, spell.id, { maxUses, remainingUses: Math.min(spell.remainingUses, maxUses) }); }} /></label><label className="dm-field"><span>REMAINING</span><input type="number" min="0" max={spell.maxUses} disabled={spell.recharge === 'unlimited'} value={spell.remainingUses} onChange={(event) => updateSpell(selected.id, spell.id, { remainingUses: clamp(Number(event.target.value), 0, spell.maxUses) })} /></label><label className="dm-field"><span>CAST OUTCOME</span><select value={outcome} onChange={(event) => setOutcome(event.target.value as SpellOutcome)}>{outcomes.map((value) => <option key={value}>{value}</option>)}</select></label></div>
-            <div className="dm-actions"><button disabled={spent} onClick={() => { setPendingSpell({ tokenId: selected.id, spellId: spell.id }); setTool('spell'); setNotice(`CHOOSE A TARGET FOR ${spell.name.toUpperCase()}`); }}>CHOOSE TARGET AND CAST</button><button onClick={() => updateSpell(selected.id, spell.id, { remainingUses: spell.maxUses })}>RESTORE USES</button><button className="danger-button" onClick={() => removeSpell(spell.id)}>REMOVE</button></div>
+            <div className="dm-grid"><label className="dm-field"><span>AVAILABILITY</span><select value={spell.recharge} onChange={(event) => updateSpell(selected.id, spell.id, { recharge: event.target.value as RechargeKind })}>{recharges.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}</select></label><label className="dm-field"><span>USES</span><input type="number" min="1" disabled={spell.recharge === 'unlimited'} value={spell.maxUses} onChange={(event) => { const maxUses = Math.max(1, Number(event.target.value)); updateSpell(selected.id, spell.id, { maxUses, remainingUses: Math.min(spell.remainingUses, maxUses) }); }} /></label><label className="dm-field"><span>REMAINING</span><input type="number" min="0" max={spell.maxUses} disabled={spell.recharge === 'unlimited'} value={spell.remainingUses} onChange={(event) => updateSpell(selected.id, spell.id, { remainingUses: clamp(Number(event.target.value), 0, spell.maxUses) })} /></label></div>
+            <div className="spell-cast-row"><label><span>WHAT HAPPENS?</span><select value={outcome} onChange={(event) => setOutcome(event.target.value as SpellOutcome)}>{outcomes.map((value) => <option key={value}>{value}</option>)}</select></label><button disabled={spent} onClick={() => { setPendingSpell({ tokenId: selected.id, spellId: spell.id }); setTool('spell'); setNotice(`CHOOSE A TARGET FOR ${spell.name.toUpperCase()}`); }}>1. CHOOSE TARGET · 2. SHOW EFFECT</button></div><div className="dm-actions"><button onClick={() => previewSpell(spell)}>PREVIEW EFFECT · NO COST</button><button onClick={() => updateSpell(selected.id, spell.id, { remainingUses: spell.maxUses })}>RESTORE USES</button><button className="danger-button" onClick={() => removeSpell(spell.id)}>REMOVE</button></div>
           </article>; })}<div className="dm-actions"><button className="dm-save" onClick={addSpell}>ADD SPELL OR ACTION</button>{selected.kind === 'player' && <button onClick={restoreStarterActions}>RESTORE PLAYER STARTER CARDS</button>}<button onClick={() => rest('short')}>SHORT REST</button><button onClick={() => rest('long')}>LONG REST</button></div></>}
         </div></details>
       </aside>
-      <section className="battle-stage"><header><div><span>{map.name}</span><strong>ROUND {map.round}</strong></div><p>{map.announcement}</p></header><BattleMapBoard state={map} interactive selectedTokenId={selectedId} hoverCell={hoverCell} measureStart={tool === 'measure' ? measureStart : null} moveStart={moveStart} rangeOrigin={pendingCaster ? { x: pendingCaster.x, y: pendingCaster.y } : null} rangeFeet={pendingSpellRecord?.rangeFeet || 0} onCellClick={handleCell} onCellHover={setHoverCell} onTokenClick={handleToken} /><footer><span>TOOL: {tool.toUpperCase()}</span><span>{active ? `ACTIVE: ${active.name.toUpperCase()}` : 'NO ACTIVE TURN'}</span><span>{pendingSpell ? 'SELECT A TARGET' : 'PLAYER VIEWS LIVE'}</span></footer></section>
+      <section className="battle-stage"><header><div><span>{map.name}</span><strong>ROUND {map.round}</strong></div><p>{map.announcement}</p></header><BattleMapBoard state={map} interactive selectedTokenId={selectedId} hoverCell={hoverCell} measureStart={tool === 'measure' ? measureStart : null} moveStart={moveStart} rangeOrigin={pendingCaster ? { x: pendingCaster.x, y: pendingCaster.y } : null} rangeFeet={pendingSpellRecord?.rangeFeet || 0} onCellClick={handleCell} onCellHover={setHoverCell} onTokenClick={handleToken} /><footer><span>TOOL: {tool.toUpperCase()}</span><span>{active ? `ACTIVE: ${active.name.toUpperCase()}` : 'NO ACTIVE TURN'}</span><span>{map.effect ? 'EFFECT IS VISIBLE TO PLAYERS' : pendingSpell ? 'SELECT A TARGET' : 'PLAYER VIEWS LIVE'}</span></footer></section>
     </div>
+    {showPlayerPreview && <section className="dm-player-preview"><header><div><strong>WHAT PLAYERS SEE</strong><span>This preview uses the exact same display as the TV and Discord tab.</span></div><button onClick={testPlayerDisplay}>TEST AN EFFECT NOW</button></header><BattlePlayerSurface map={map} compact /></section>}
   </section>;
 }

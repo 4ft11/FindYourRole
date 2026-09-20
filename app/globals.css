@@ -883,3 +883,34 @@ h2 { margin: 18px 0 28px; color: #e4d4a2; font-family: Georgia, serif; font-size
 @media (max-width: 850px) { .sunny-layout { grid-template-columns: 1fr; }.sunny-kept { order: 2; }.sunny-story-card { min-height: 0; }.sunny-header { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 560px) { .shutdown-shell { padding: 16px; }.shutdown-notice { padding-inline: 12px; }.sun-fracture { right: 15px; bottom: 18px; }.sun-identity-gate form { padding: 34px 22px 24px; }.sunny-layout { width: calc(100% - 20px); padding: 18px 0 30px; }.sunny-story-card { padding: 34px 20px 26px; }.sunny-choices button { min-height: 52px; padding: 14px; }.sunny-response { padding: 18px; }.sunny-complete > .sunny-dm-controls { position: static; width: min(700px, 100%); opacity: .72; } }
 @media (prefers-reduced-motion: reduce) { .shutdown-night, .shutdown-cracks, .repair-line i, .sun-fracture, .sunny-rays { animation: none !important; } }
+
+/* Longer Sunny Corner: playful story progress, discoveries, and catchable daylight. */
+.sunny-story-progress { height: 4px; margin: -20px 0 28px; overflow: hidden; background: rgba(117,80,29,.14); }
+.sunny-story-progress span { display: block; height: 100%; background: linear-gradient(90deg, #b8683d, #e2b449, #fff0a1); box-shadow: 0 0 10px rgba(220,160,46,.45); transition: width .5s ease; }
+.sunny-instruction { margin: 25px 0 0 !important; border-left: 2px solid #d1a349; color: #8b6533 !important; padding: 3px 0 3px 13px; font: italic 13px/1.45 Georgia, serif !important; }
+.sunny-choices button.is-discovered { border-style: dashed; background: rgba(213,191,126,.3); color: #826f4e; cursor: default; translate: 0; box-shadow: none; }
+.sunny-choices button.is-discovered span { color: #9a7a40; font-size: 7px; letter-spacing: .12em; }
+.sunny-mote-field { position: relative; min-height: 360px; margin: 28px 0 18px; border: 1px dashed rgba(156,112,43,.52); background: radial-gradient(circle at 50% 50%, rgba(255,247,193,.62), rgba(228,193,101,.16)), repeating-linear-gradient(45deg, transparent 0 20px, rgba(151,103,34,.035) 20px 21px); overflow: hidden; }
+.sunny-mote-field::before { content: "Catch the light"; position: absolute; left: 50%; top: 50%; color: rgba(134,95,39,.19); translate: -50% -50%; font: italic 32px Georgia, serif; white-space: nowrap; }
+.sunny-mote-field button { --x: 12%; --y: 14%; position: absolute; left: var(--x); top: var(--y); width: 118px; border: 0; background: transparent; color: #885d20; cursor: pointer; text-align: center; animation: sunny-mote-float 2.8s ease-in-out infinite alternate; animation-delay: calc(var(--mote-index) * -.47s); }
+.sunny-mote-field button:nth-child(2) { --x: 62%; --y: 9%; }
+.sunny-mote-field button:nth-child(3) { --x: 39%; --y: 42%; }
+.sunny-mote-field button:nth-child(4) { --x: 8%; --y: 68%; }
+.sunny-mote-field button:nth-child(5) { --x: 70%; --y: 66%; }
+.sunny-mote-field button span { display: grid; place-items: center; width: 42px; height: 42px; margin: 0 auto 6px; border-radius: 50%; background: radial-gradient(circle, #fff8c7 0 16%, #f3c751 24%, rgba(238,178,44,.28) 52%, transparent 70%); color: #fff6bf; font-size: 16px; text-shadow: 0 0 8px #fff; filter: drop-shadow(0 0 9px #e1a527); }
+.sunny-mote-field button small { display: block; border: 1px solid rgba(150,109,49,.34); background: rgba(255,244,196,.87); padding: 5px; font: 7px/1.25 "Courier New", monospace; }
+.sunny-mote-field button:hover span, .sunny-mote-field button:focus-visible span { scale: 1.22; filter: drop-shadow(0 0 15px #d8931d); }
+.sunny-mote-field button:focus-visible { outline: 1px solid #9c722f; outline-offset: 4px; }
+.sunny-mote-field button.is-caught { opacity: .35; animation: none; cursor: default; }
+.sunny-mote-field button.is-caught span { filter: none; scale: .72; }
+@keyframes sunny-mote-float { from { translate: -3px -5px; } to { translate: 5px 8px; } }
+@media (max-width: 560px) {
+  .sunny-story-progress { margin-top: -12px; }
+  .sunny-mote-field { min-height: 430px; }
+  .sunny-mote-field button { width: 100px; }
+  .sunny-mote-field button:nth-child(2) { --x: 56%; }
+  .sunny-mote-field button:nth-child(3) { --x: 34%; --y: 39%; }
+  .sunny-mote-field button:nth-child(4) { --x: 5%; --y: 70%; }
+  .sunny-mote-field button:nth-child(5) { --x: 58%; --y: 68%; }
+}
+@media (prefers-reduced-motion: reduce) { .sunny-mote-field button { animation: none !important; } }

@@ -1,0 +1,27 @@
+RUMERIANNE WEBSITE — GITHUB UPLOAD
+
+This folder is the clean, current website.
+
+IMPORTANT
+- Keep your GitHub repository. Delete or replace the old files inside it; do not delete the repository itself.
+- Keep your Render service, persistent disk, and environment settings.
+- Open this folder and upload its CONTENTS to the top level of the GitHub repository.
+- Do not upload the outer UPLOAD-TO-GITHUB folder as a single nested folder.
+
+SIMPLE UPDATE STEPS
+1. Open your existing GitHub repository.
+2. Remove the old website files from the repository, but keep the repository.
+3. Choose Add file, then Upload files.
+4. Open this folder on your computer.
+5. Drag everything inside this folder into GitHub.
+6. Use the commit message: Replace old site with Rumerianne Chronicle update
+7. Commit directly to the main branch.
+8. Render should deploy the update automatically.
+
+DO NOT CHANGE IN RENDER
+- The persistent disk or its mount path
+- WAYFARER_DM_KEY
+- WAYFARER_DATA_DIR
+- Any other working environment settings
+
+If the deployment fails, save the Render error log and bring it back to Codex before changing settings.

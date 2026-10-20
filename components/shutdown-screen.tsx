@@ -1,33 +1,27 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const repairLines = [
-  'RECONSTRUCTING ACCESS LAYER',
-  'REPAIR ATTEMPT INTERRUPTED',
-  'SEARCHING FOR A STABLE THREAD',
-  'RECONSTRUCTING ACCESS LAYER',
+  'THE MARGIN IS MENDING ITSELF',
+  'A LINE OF INK HAS GONE MISSING',
+  'THE RECORD TURNS ANOTHER PAGE',
+  'THE MARGIN IS MENDING ITSELF',
 ];
 
+const lanterns = Array.from({ length: 7 }, (_, index) => ({
+  index,
+  stasis: index === 2,
+  moon: index === 6,
+}));
+
 export default function ShutdownScreen() {
-  const [sunVisible, setSunVisible] = useState(false);
-  const [gateOpen, setGateOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [denied, setDenied] = useState(false);
   const [repairIndex, setRepairIndex] = useState(0);
 
   useEffect(() => {
-    const sunTimer = window.setTimeout(() => setSunVisible(true), 5200);
     const repairTimer = window.setInterval(() => setRepairIndex((current) => (current + 1) % repairLines.length), 2800);
-    return () => { window.clearTimeout(sunTimer); window.clearInterval(repairTimer); };
+    return () => window.clearInterval(repairTimer);
   }, []);
-
-  function enterLight(event: FormEvent) {
-    event.preventDefault();
-    if (name.trim().toLocaleLowerCase() !== 'celis') { setDenied(true); return; }
-    window.sessionStorage.setItem('sunny-corner-recognized', 'celis');
-    window.location.assign('/sunny-corner');
-  }
 
   return <main className="shutdown-shell">
     <div className="shutdown-night" aria-hidden="true" />
@@ -39,25 +33,19 @@ export default function ShutdownScreen() {
     </svg>
 
     <section className="shutdown-notice" aria-labelledby="shutdown-title">
-      <p>SYSTEM INTERRUPTION</p>
-      <h1 id="shutdown-title">Synchronization in progress.</h1>
-      <p>Traveler access temporarily unavailable.</p>
+      <p>THE SEVEN LIGHTS</p>
+      <h1 id="shutdown-title">The way remains unfinished.</h1>
+      <p>One by one, the lanterns remember their flame.</p>
+      <ol className="seven-lanterns" aria-label="Seven lanterns. Six are illuminated and the moon-marked seventh is dark.">
+        {lanterns.map((lantern) => <li className={`manuscript-lantern${lantern.stasis ? ' is-stasis' : ''}${lantern.moon ? ' is-moon' : ''}`} key={lantern.index} style={{ animationDelay: `${lantern.index * 420}ms` }}>
+          <span className="lantern-crown" aria-hidden="true" />
+          <span className="lantern-body" aria-hidden="true"><i className="lantern-flame" />{lantern.stasis && <b className="lantern-line">—</b>}{lantern.moon && <b className="lantern-moon">☾</b>}</span>
+          <span className="lantern-foot" aria-hidden="true" />
+          <span className="sr-only">Lantern {lantern.index + 1}{lantern.stasis ? ', marked with a line and already lit' : lantern.moon ? ', marked with a moon and unlit' : ', lit'}</span>
+        </li>)}
+      </ol>
       <div className="repair-line" aria-live="polite"><i /><span>{repairLines[repairIndex]}</span><b>{String(repairIndex + 1).padStart(2, '0')}</b></div>
     </section>
 
-    {sunVisible && <button className="sun-fracture" type="button" onClick={() => setGateOpen(true)} aria-label="A small warm light has appeared">
-      <span aria-hidden="true">✦</span>
-    </button>}
-
-    {gateOpen && <div className="sun-identity-gate" role="dialog" aria-modal="true" aria-labelledby="sun-gate-title">
-      <form onSubmit={enterLight}>
-        <button className="sun-gate-close" type="button" onClick={() => { setGateOpen(false); setDenied(false); }}>×</button>
-        <div className="sun-gate-symbol" aria-hidden="true">✦</div>
-        <p id="sun-gate-title">Who is standing in the light?</p>
-        <label><span>YOUR NAME</span><input autoFocus value={name} onChange={(event) => { setName(event.target.value.slice(0, 30)); setDenied(false); }} autoComplete="given-name" /></label>
-        {denied && <small>The light does not answer.</small>}
-        <button className="sun-gate-enter" type="submit" disabled={!name.trim()}>STEP CLOSER</button>
-      </form>
-    </div>}
   </main>;
 }

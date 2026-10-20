@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 
-type SecretIdentity = 'celis' | 'matt';
+type SecretIdentity = 'matt';
 type Response = { text: string; reply: string; token: string };
 type Exchange = { words: string[]; responses: Response[] };
 type Conversation = {
@@ -14,45 +14,6 @@ type Conversation = {
 };
 
 const conversations: Record<SecretIdentity, Conversation> = {
-  celis: {
-    speaker: 'AUREN, HOLDER OF DAYLIGHT',
-    invocation: [
-      'There you are, little daughter.',
-      'A faerie is not born when wings appear. She is born when the daylight recognizes her—and I have recognized you.',
-    ],
-    begin: 'LET THE DAYLIGHT IN',
-    exchanges: [
-      {
-        words: ['Come into the grass, Celis. Tell me: when wonder finds you, what do you hope it asks of you?'],
-        responses: [
-          { text: 'To protect something small and easily overlooked.', reply: 'Then your light will know how to become shelter.', token: 'shelter' },
-          { text: 'To follow it somewhere no one else has noticed.', reply: 'Then the hidden ways may open when you laugh.', token: 'hidden ways' },
-          { text: 'To become something I have never been before.', reply: 'Then your shape may answer joy before fear.', token: 'becoming' },
-        ],
-      },
-      {
-        words: ['Your magic will not feel like a lesson. It will feel like remembering. How should it move through you?'],
-        responses: [
-          { text: 'As warm gold that gathers around the people I love.', reply: 'A generous radiance. Keep some for yourself.', token: 'golden radiance' },
-          { text: 'As glamour, color, and beautiful mischief.', reply: 'Good. Delight can reveal what solemnity conceals.', token: 'glamour' },
-          { text: 'As wings, wind, and the freedom to leave the ground.', reply: 'Then no cage should ever be mistaken for a home.', token: 'wild flight' },
-        ],
-      },
-      {
-        words: ['I may call you daughter. You may decide what that word means. What must remain yours?'],
-        responses: [
-          { text: 'My freedom to choose who I become.', reply: 'It was yours before I spoke. It remains yours now.', token: 'freedom' },
-          { text: 'My love for the people who came with me.', reply: 'Bring them into the light when they are ready—not before.', token: 'devotion' },
-          { text: 'The right to question even you.', reply: 'Especially me. Daylight that cannot bear scrutiny is only fire.', token: 'honest wonder' },
-        ],
-      },
-    ],
-    closing: (tokens) => [
-      'Then I have heard you.',
-      `You will carry ${tokens[0]}, answer through ${tokens[1]}, and keep ${tokens[2]} as your own.`,
-      'Go gently, little faerie. We will speak again when the morning knows your name.',
-    ],
-  },
   matt: {
     speaker: 'THE ONE WHO WATCHES OVER JOURNEYMEN',
     invocation: [
@@ -108,11 +69,11 @@ export default function SecretSelection({ identity, onReturn }: { identity: Secr
   const closing = complete ? conversation.closing(answers.map((answer) => answer.token)) : [];
   const report = useMemo(() => [
     'PRIVATE CONVERSATION RECORD',
-    `Traveler: ${identity === 'celis' ? 'Celis' : 'Matt'}`,
+    'Traveler: Matt',
     `Voice: ${conversation.speaker}`,
     '',
     ...conversation.exchanges.flatMap((item, index) => [`${index + 1}. ${item.words.join(' ')}`, answers[index]?.text || '[No response]', '']),
-  ].join('\n').trim(), [answers, conversation, identity]);
+  ].join('\n').trim(), [answers, conversation]);
 
   function answer(response: Response) {
     const next = [...answers.slice(0, step), response];

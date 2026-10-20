@@ -48,7 +48,7 @@ export default function ContinuityCalibration({ onExit }: { onExit?: () => void 
   const [copyStatus, setCopyStatus] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
   const summaryRef = useRef<HTMLTextAreaElement>(null);
-  const secretIdentity = (['celis', 'matt'].includes(normalizeIdentity(name)) ? normalizeIdentity(name) : null) as 'celis' | 'matt' | null;
+  const secretIdentity = (normalizeIdentity(name) === 'matt' ? 'matt' : null) as 'matt' | null;
   const knownIdentity = findPlayer(name);
 
   const question = player?.questions[index];

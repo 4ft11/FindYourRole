@@ -6,6 +6,7 @@ import DmMessageGenerator from '@/components/dm-message-generator';
 import DmItemGenerator from '@/components/dm-item-generator';
 import DmBattleMap from '@/components/dm-battle-map';
 import DmWorldMap from '@/components/dm-world-map';
+import DmAdventureConsole from '@/components/dm-adventure-console';
 
 type Draft = { id: string; name: string; updatedAt: string; data: UIWindowData };
 const draftsKey = 'wayfarer-dm-ui-drafts-v1';
@@ -20,7 +21,7 @@ export default function DmUiStudio() {
   const [importValue, setImportValue] = useState('');
   const [status, setStatus] = useState('WINDOW DRAFTS ARE SAVED ON THIS DEVICE');
   const [presenting, setPresenting] = useState(false);
-  const [studioTab, setStudioTab] = useState<'windows' | 'messages' | 'items' | 'maps' | 'world'>('windows');
+  const [studioTab, setStudioTab] = useState<'windows' | 'messages' | 'items' | 'adventure' | 'maps' | 'world'>('adventure');
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -55,9 +56,9 @@ export default function DmUiStudio() {
   if (presenting) return <main className="presentation-stage" onClick={() => setPresenting(false)}><div onClick={(event) => event.stopPropagation()}><UIWindow data={data} presentation /></div><p>Tap the background or press Escape to return</p></main>;
 
   return <main className="dm-shell">
-    <header className="dm-header"><div><p>THE INDEX // LOCAL CREATION SURFACE</p><h1>DM CREATION STUDIO</h1></div><span className="dm-local-badge">DEVICE-LOCAL DRAFTS</span></header>
-    <nav className="dm-tabs" aria-label="DM Studio sections"><button className={studioTab === 'windows' ? 'active' : ''} onClick={() => setStudioTab('windows')}>SYSTEM WINDOWS</button><button className={studioTab === 'messages' ? 'active' : ''} onClick={() => setStudioTab('messages')}>MESSAGE GENERATOR</button><button className={studioTab === 'items' ? 'active' : ''} onClick={() => setStudioTab('items')}>ITEM GENERATOR</button><button className={studioTab === 'maps' ? 'active' : ''} onClick={() => setStudioTab('maps')}>BATTLE MAPS</button><button className={studioTab === 'world' ? 'active' : ''} onClick={() => setStudioTab('world')}>EMPIRE MAP</button></nav>
-    {studioTab === 'messages' ? <DmMessageGenerator /> : studioTab === 'items' ? <DmItemGenerator /> : studioTab === 'maps' ? <DmBattleMap /> : studioTab === 'world' ? <DmWorldMap /> : <div className="dm-workspace">
+    <header className="dm-header"><div><p>THE INDEX // GUIDE CREATION SURFACE</p><h1>DM CREATION STUDIO</h1></div><span className="dm-local-badge">LOCAL TOOLS // LIVE THREAD READY</span></header>
+    <nav className="dm-tabs" aria-label="DM Studio sections"><button className={studioTab === 'adventure' ? 'active' : ''} onClick={() => setStudioTab('adventure')}>TEXT ADVENTURE</button><button className={studioTab === 'windows' ? 'active' : ''} onClick={() => setStudioTab('windows')}>SYSTEM WINDOWS</button><button className={studioTab === 'messages' ? 'active' : ''} onClick={() => setStudioTab('messages')}>MESSAGE GENERATOR</button><button className={studioTab === 'items' ? 'active' : ''} onClick={() => setStudioTab('items')}>ITEM GENERATOR</button><button className={studioTab === 'maps' ? 'active' : ''} onClick={() => setStudioTab('maps')}>BATTLE MAPS</button><button className={studioTab === 'world' ? 'active' : ''} onClick={() => setStudioTab('world')}>EMPIRE MAP</button></nav>
+    {studioTab === 'adventure' ? <DmAdventureConsole /> : studioTab === 'messages' ? <DmMessageGenerator /> : studioTab === 'items' ? <DmItemGenerator /> : studioTab === 'maps' ? <DmBattleMap /> : studioTab === 'world' ? <DmWorldMap /> : <div className="dm-workspace">
       <aside className="dm-editor">
         <div className="dm-notice">Window drafts stay on this browser until exported. This studio cannot edit the public website or send anything automatically.</div>
         <div className="dm-grid">

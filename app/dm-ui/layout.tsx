@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'DM Creation Studio',
+  title: 'The Guide’s Folio · Rumerianne',
   robots: { index: false, follow: false, nocache: true },
 };
 

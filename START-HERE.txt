@@ -1,0 +1,116 @@
+THE CHRONICLE OF RUMERIANNE — OCTOBER 20 UPDATE
+
+This update is local until you upload it to GitHub and Render redeploys.
+No GitHub repository or Render setting has been changed for you.
+
+YOUR VIEWS
+
+  /          Player entrance and permanent Chronicle
+  /guide     Your private Guide's Folio (the old /dm-ui address still works)
+  /adventure Personal live chapter
+  /display   Read-only shared view for a TV, projector, or Discord stream
+
+RUNNING IN PERSON WITHOUT LOSING YOUR COMPUTER
+
+1. Keep /guide on your laptop.
+2. Open Shared Display in a separate browser window.
+3. Use the TV as an EXTENDED display, not a mirror. Move only the Shared
+   Display window to it. Your laptop remains your private workspace.
+4. In Discord, share that specific display window, not your entire desktop.
+5. Enter the session's chapter key on the Shared Display.
+
+You can continue typing, creating items, or changing drafts privately
+while players keep seeing the last revealed scene.
+
+AN UNEXPECTED ITEM OR MESSAGE
+
+For a quick UI message: choose Notice in the live chapter, write a title
+and message, choose an audience, check the scrying-basin preview, then Reveal.
+
+For an item: open Objects, create the item, and choose Prepare for Live
+Reveal. This returns you to the live chapter with an unpublished draft.
+Choose its audience and Reveal. The same bridge exists for Messages and
+Illuminations. Nothing is broadcast merely by opening or editing a tool.
+
+The "Players see now" preview represents the SHARED DISPLAY only.
+Private player messages deliberately do not appear there.
+
+SESSION SETTINGS
+
+Open Prepare session. Set a title, chapter key, invited names, and mode:
+In person, Online, or Hybrid. Save the settings.
+Modes use the same session and messages. Switching mode does not clear it.
+
+Shared Display + all players broadcasts once to the TV and all personal
+books. All personal books excludes the TV. Only [name] is private.
+My private notes only is visible only in the Guide's Folio.
+
+Dice appear only when you request one. Players cast it on their left
+page. For physical dice, enter the face value under Awaiting a roll;
+the saved modifier is added once. The result remains private until you
+reveal the outcome in a narration or notice.
+
+The conversation retains the newest 300 messages. The latest deliberate
+image/notice for each audience is retained separately. This is not yet an
+unlimited campaign transcript archive. Keep your own session summaries.
+
+PLAYER CHRONICLE
+
+Chronicle: quests and an invitation if this player has an active session.
+Roles: their recorded character information, not invented extra powers.
+Omen: one lighthearted tavern saying each day.
+Map: a quiet "not yet charted" page.
+Archive: deliberately published memories, objects, people, and messages.
+
+Campaign records currently come from data/campaign-seed.json. Updates to
+those records still use your manual upload/redeploy workflow; this update
+does NOT silently turn the creative tools into a campaign database editor.
+The four recognized records currently in that file are preserved. New
+players need confirmed records added before Chronicle recognition works.
+The Guide can invite other names directly to a live chapter using its key.
+
+PRIVACY AND SAVING
+
+The Guide's Folio requires WAYFARER_DM_KEY in production.
+For the local development preview only, if no custom key is configured,
+the phrase is wayfarer-local. That fallback is disabled in production.
+Its remembered authorization is an HttpOnly signed cookie, not a raw
+passphrase in browser storage. Seal the folio on a shared computer.
+
+Name + role recognition and a shared chapter key suit a trusted private
+hobby group, but are NOT individual strong account authentication.
+Anyone who knows another player's name and the chapter key can enter as
+that player. Do not store sensitive real-world secrets here.
+
+Personal books can contain private revelations and whispers. Do not
+screen-share a personal book to the whole party; use /display instead.
+Server filtering keeps whispers, private reveals, and Guide-only notes
+out of the Shared Display response.
+
+No ChatGPT login, sharing link, audio permission, or external AI service
+is used by the running campaign website.
+
+RENDER
+
+Keep your existing persistent disk and environment settings:
+  WAYFARER_DATA_DIR=/var/data/wayfarer
+  WAYFARER_DM_KEY=your private phrase (set in Render, never in GitHub)
+
+The disk's mount point must encompass /var/data/wayfarer, e.g. /var/data.
+Without persistent disk storage, live messages can disappear on redeploy.
+This file-based service should run as one instance.
+
+Build: pnpm install --frozen-lockfile && pnpm run build
+Start: pnpm run start
+
+Unzip the package, open the folder named "website", and upload the
+CONTENTS OF "website" at the repository root:
+app/, components/, lib/, data/, public/, package.json and the lockfile.
+Do not put them one folder down, upload the ZIP itself as source, or upload
+node_modules, .next folders, .env secrets, or live-adventure.json.
+Do not delete your GitHub repository. Back it up before replacing files.
+
+DRAWING
+
+See DRAWING-GUIDE.txt. Start with one blank open-book illustration.
+Your existing lantern is already in use; no rework is required now.

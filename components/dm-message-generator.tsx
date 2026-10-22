@@ -25,7 +25,7 @@ const endings: Record<MessageType, string[]> = {
 function pick<T>(items: T[], seed: number) { return items[Math.abs(seed) % items.length]; }
 function removeEmoji(value: string) { return value.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, ''); }
 
-export default function DmMessageGenerator() {
+export default function DmMessageGenerator({ onPrepare }: { onPrepare?: (title: string, text: string) => void }) {
   const [recipient, setRecipient] = useState('ENTIRE PARTY');
   const [type, setType] = useState<MessageType>('SYSTEM');
   const [tone, setTone] = useState<Tone>('quiet');
@@ -81,7 +81,7 @@ export default function DmMessageGenerator() {
         <label className="dm-field"><span>HEADING</span><input value={heading} onChange={(event) => setHeading(event.target.value)} /></label>
         <label className="dm-field"><span>CAMPAIGN DETAIL OR STRANGE REVELATION</span><textarea rows={5} value={detail} onChange={(event) => setDetail(event.target.value)} /></label>
         <label className="dm-field"><span>DIRECTIVE · OPTIONAL</span><textarea rows={3} value={instruction} onChange={(event) => setInstruction(event.target.value)} /></label>
-        <div className="dm-actions primary-actions"><button onClick={() => { setSequence((current) => current + 1); setCopyStatus('NEW VARIATION GENERATED'); }}>GENERATE ANOTHER VERSION</button><button onClick={copy}>COPY PLAIN TEXT</button></div>
+        <div className="dm-actions primary-actions"><button onClick={() => { setSequence((current) => current + 1); setCopyStatus('NEW VARIATION GENERATED'); }}>GENERATE ANOTHER VERSION</button><button onClick={copy}>COPY PLAIN TEXT</button>{onPrepare && <button onClick={() => onPrepare(heading, output)}>PREPARE FOR LIVE REVEAL</button>}</div>
       </section>
       <section className="message-output-panel"><div className="preview-label"><span>COPY-AND-PASTE PREVIEW</span><small>NO EMOJI // NOTHING SENT AUTOMATICALLY</small></div><textarea ref={outputRef} value={output} readOnly aria-label="Generated plain-text game interface message" /><button className="present-button" onClick={copy}>COPY MESSAGE</button></section>
     </div>

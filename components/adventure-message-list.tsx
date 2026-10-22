@@ -6,14 +6,17 @@ import type { AdventureMessage } from '@/lib/adventure-types';
 
 export default function AdventureMessageList({ messages, playerName, guideView = false }: { messages: AdventureMessage[]; playerName?: string; guideView?: boolean }) {
   const endRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages.length]);
+  useEffect(() => {
+    const container = endRef.current?.closest<HTMLElement>('[data-conversation-scroll]');
+    if (container && container.scrollHeight - container.scrollTop - container.clientHeight < 350) container.scrollTop = container.scrollHeight;
+  }, [messages.length]);
 
   if (!messages.length) return <div className="adventure-empty"><span>◇</span><strong>THE THREAD IS QUIET</strong><p>Nothing has been written here yet.</p></div>;
 
   return <div className="adventure-transcript" aria-live="polite">
     {messages.map((message) => {
       const own = message.sender === 'player' && playerName?.toLowerCase() === message.senderName.toLowerCase();
-      const privateMessage = message.recipient !== 'all';
+      const privateMessage = !['all', 'display', 'players'].includes(message.recipient);
       return <article className={`adventure-message from-${message.sender} kind-${message.kind}${own ? ' is-own' : ''}`} key={message.id}>
         <header><span>{message.sender === 'guide' ? 'THE GUIDE' : message.senderName.toUpperCase()}</span><time>{new Date(message.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>{message.kind === 'whisper' ? <small>WHISPER · OUT OF GAME</small> : privateMessage && <small>{guideView ? `PRIVATE · ${message.recipient.toUpperCase()}` : 'PRIVATE THREAD'}</small>}</header>
         {message.ui ? <div className={`adventure-ui-message ui-${message.ui.type}`}><div><span>{message.ui.type.toUpperCase()}</span><strong>{message.ui.title}</strong></div><p>{message.text}</p></div> : message.text && <p>{message.text}</p>}

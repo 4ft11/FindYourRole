@@ -1,0 +1,163 @@
+/* The Recognizing Archive: environmental light, an actual book, quiet controls. */
+.archive-screen, .archive-chronicle {
+  --archive-gold: #c9ae70;
+  --archive-ivory: #e6ddc8;
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  color: var(--archive-ivory);
+  background: #090b09;
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+}
+.archive-screen { display: flex; flex-direction: column; padding: 7vh 5vw 0; border: 8px solid #050605; overflow: clip; }
+.archive-environment { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; background: linear-gradient(90deg, #05080630, #080b0960 55%, #050706ba), linear-gradient(0deg, #070907e8, transparent 55%), url('/art/recognizing-archive.png') center / cover; }
+.archive-environment::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 150px 40px #0008; background: radial-gradient(ellipse at 29% 57%, #d5a45b12, transparent 50%); }
+.archive-light { position: absolute; inset: -50% 35% -20% -30%; transform: rotate(-32deg); background: linear-gradient(90deg, transparent 40%, #efcb8b08 49%, transparent 56%); }
+.archive-hanging-lantern { position: absolute; top: -110px; left: -35px; width: clamp(130px, 17vw, 250px); opacity: .85; filter: saturate(.65) brightness(.83); }
+.archive-motes i { position: absolute; width: 2px; height: 2px; background: #f1d29b; border-radius: 50%; opacity: 0; box-shadow: 0 0 6px #dfb771; animation: archive-dust 17s ease-in-out infinite; }
+.archive-composition { flex: 1; width: min(1440px, 100%); margin: auto; display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(270px, 1fr); align-items: center; gap: clamp(36px, 6vw, 100px); min-height: 76svh; }
+.archive-artifact { position: relative; display: grid; place-items: center; perspective: 1600px; min-width: 0; padding: 30px 0; }
+.archive-cover {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  width: clamp(280px, 31vw, 460px); aspect-ratio: .73; padding: 17% 28px 10%;
+  border: 2px solid #292c24; border-radius: 8px 16px 14px 6px; cursor: pointer;
+  color: #bba26b; background: radial-gradient(ellipse at 25% 20%, #46504455, transparent 60%), repeating-linear-gradient(33deg, #ffffff04 0 1px, transparent 1px 4px), linear-gradient(110deg, #0c110e 5%, #252e24 11%, #161d17 19%, #1a231b 80%, #0d140e);
+  box-shadow: 3px 3px 0 #58503b, 8px 8px 0 #1c2017, 12px 12px 0 #9b9074, 15px 16px 0 #161b13, 20px 32px 35px #000c, inset 0 0 40px #0009;
+  transform: rotate(-7deg) rotateY(9deg); transition: transform 800ms ease, filter 800ms ease;
+  text-shadow: 0 2px 1px #000; outline-offset: 16px;
+}
+.archive-cover:hover { transform: rotate(-4deg) rotateY(3deg) translateY(-5px); filter: brightness(1.1); }
+.archive-cover-rule { position: absolute; inset: 20px 23px 21px 35px; border: 1px solid #99825280; border-radius: 4px 12px 12px 4px; box-shadow: inset 0 0 0 5px #161c15, inset 0 0 0 6px #8b754a40; pointer-events: none; }
+.archive-cover-rule::before, .archive-cover-rule::after { content: ""; position: absolute; width: 42px; height: 42px; border: 1px solid #9c8359; transform: rotate(45deg); background: #20261c; }
+.archive-cover-rule::before { top: -7px; right: -7px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.archive-cover-rule::after { bottom: -7px; right: -7px; clip-path: polygon(0 0, 100% 100%, 0 100%); }
+.archive-cover-spine { position: absolute; left: 7px; top: 0; bottom: 0; width: 20px; border-right: 1px solid #7c6d4355; background: repeating-linear-gradient(0deg, transparent 0 15%, #6a5b3b99 15.3% 16%, #050b08 16.3% 17%, transparent 17.3% 25%); box-shadow: -4px 0 8px #000a; }
+.archive-cover-small { font-size: clamp(11px, 1.2vw, 15px); letter-spacing: .19em; text-transform: uppercase; }
+.archive-cover-title { font-size: clamp(26px, 3vw, 43px); letter-spacing: .05em; margin-top: 9px; }
+.archive-cover-seal { display: block; width: 62%; max-width: 235px; margin: 25px auto 20px; filter: drop-shadow(0 2px 1px #000); opacity: .9; }
+.archive-cover-seal svg { width: 100%; }
+.archive-cover-motto { font-size: 12px; font-style: italic; color: #a49b81; }
+.archive-cover-action { font-size: 10px; text-transform: uppercase; letter-spacing: .16em; margin-top: auto; padding-top: 28px; color: #d6c7a3; }
+.archive-clasp { position: absolute; right: -28px; top: 47%; width: 84px; height: 44px; border: 2px solid #685738; border-radius: 8px 0 0 8px; background: linear-gradient(155deg, #b49d69, #675738 39%, #38372a 60%, #837146); box-shadow: 0 5px 7px #000b, inset 0 0 0 3px #14180d80; display: grid; place-items: center; }
+.archive-clasp span { width: 17px; height: 17px; border: 1px solid #d2bc88; transform: rotate(45deg); box-shadow: 0 0 10px #d9b06235; }
+.archive-introduction { align-self: center; padding-bottom: 40px; }
+.archive-eyebrow { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: #bfae85; margin: 0 0 28px; }
+.archive-introduction h1 { font-weight: 400; font-size: clamp(36px, 4.4vw, 67px); line-height: 1.08; letter-spacing: -.035em; margin: 0; color: #ede6d4; text-shadow: 0 3px 25px #000; }
+.archive-introduction h1 > span { display: block; font-size: .35em; font-style: italic; letter-spacing: .04em; margin-bottom: 16px; color: #b9ae92; }
+.archive-title-rule { height: 1px; width: 160px; background: linear-gradient(90deg, #b99b5a, transparent); margin: 32px 0; }
+.archive-title-rule i { display: block; position: relative; top: -3px; width: 7px; height: 7px; background: #b99b5a; transform: rotate(45deg); }
+.archive-invocation { white-space: pre-line; font-size: clamp(17px, 1.7vw, 21px); line-height: 1.65; color: #c5beaa; margin: 0; }
+.archive-offered-seal { display: flex; align-items: center; gap: 16px; min-height: 90px; margin-top: 42px; color: #b0a690; }
+.archive-offered-seal svg { width: 65px; height: 65px; flex-shrink: 0; opacity: .6; }
+.archive-offered-seal.has-role svg { color: #ddbd75; opacity: 1; filter: drop-shadow(0 0 9px #b58a3933); transition: color 600ms; }
+.archive-offered-seal span { display: block; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; }
+.archive-offered-seal p { margin: 6px 0 0; font-size: 21px; font-variant: small-caps; letter-spacing: .04em; }
+.archive-whisper { font-style: italic; font-size: 13px; color: #b8ab8b; margin-top: 45px; }
+.archive-footer { display: flex; justify-content: space-between; gap: 15px; width: 100%; color: #9b9889; padding: 20px 0; font-size: 9px; letter-spacing: .17em; text-transform: uppercase; }
+.archive-footer span:last-child { color: #b1a685; }
+
+/* Name and seal are written directly on the two leaves, without nested cards. */
+.archive-spread { position: relative; width: 100%; display: grid; grid-template-columns: 1fr 1fr; min-height: 520px; border-radius: 6px 12px 10px 5px; border: 7px solid #20261b; outline: 1px solid #756342; box-shadow: 0 8px 0 #81765c, 0 12px 0 #21271b, 0 35px 50px #000c; color: #332d20; transform-origin: center; animation: archive-unfold 850ms cubic-bezier(.16,1,.3,1) both; }
+.archive-spread::after { content: ""; position: absolute; top: 0; bottom: 0; width: 20px; left: calc(50% - 10px); background: linear-gradient(90deg, transparent, #322a1555, #322a1577, transparent); pointer-events: none; }
+.archive-inscription-page, .archive-seal-page { margin: 0; border: 0; min-width: 0; padding: 26px clamp(18px, 2.5vw, 40px) 20px; background: repeating-linear-gradient(94deg, #644c2405 0 1px, transparent 1px 4px), radial-gradient(ellipse at 70% 30%, #e9e3ce, #ccc3a6); }
+.archive-inscription-page { border-radius: 0 0 0 3px; box-shadow: inset 14px 0 25px #50432822, inset -8px 0 30px #34241117; }
+.archive-seal-page { box-shadow: inset -13px 0 25px #50432822; }
+.archive-folio-number { text-align: center; margin: 0 0 35px; text-transform: uppercase; color: #726449; font-size: 9px; letter-spacing: .18em; }
+.archive-spread h2 { font-weight: 400; font-size: clamp(24px, 2.2vw, 33px); line-height: 1.15; margin: 0 0 12px; letter-spacing: -.02em; color: #343526; }
+.archive-page-copy { font-size: 14px; line-height: 1.55; margin: 0 0 30px; color: #61563e; }
+.archive-name-label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: #63583e; }
+.archive-name { display: block; width: 100%; min-height: 48px; border: 0; border-bottom: 1px solid #837553; border-radius: 0; padding: 5px 0; background: transparent; font: italic 25px Palatino, Georgia, serif; color: #302e20; outline-offset: 6px; }
+.archive-agreement { display: flex; align-items: start; gap: 10px; font-size: 13px; line-height: 1.4; margin-top: 25px; color: #504831; cursor: pointer; }
+.archive-agreement input { accent-color: #4b5035; width: 16px; height: 16px; flex-shrink: 0; margin: 2px 0; }
+.archive-recognize { border: 0; border-block: 1px solid #8c7d59; width: 100%; background: #393c2b; color: #f0e9d6; padding: 13px 11px; margin-top: 26px; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; font: 13px Palatino, Georgia, serif; cursor: pointer; transition: background 250ms; }
+.archive-recognize:hover:enabled { background: #4c5039; }
+.archive-recognize:disabled { background: #393c2b13; color: #70664f; cursor: default; }
+.archive-notice { display: block; min-height: 55px; margin-top: 15px; font-size: 12px; line-height: 1.45; color: #6a3628; }
+.archive-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 10px; margin-top: -8px; }
+.archive-role { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: #62553b; cursor: pointer; text-align: center; }
+.archive-role input { position: absolute; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.archive-role-emblem { display: block; width: 64px; height: 64px; padding: 4px; border-radius: 50%; color: #716447; transition: color 250ms, background 250ms, box-shadow 250ms; }
+.archive-role-emblem svg { display: block; width: 100%; height: 100%; }
+.archive-role:hover .archive-role-emblem { color: #342b17; background: #a3823d18; }
+.archive-role.is-selected .archive-role-emblem { background: #303a2a; color: #ead3a0; box-shadow: 0 0 0 2px #a58c56, 0 0 18px #ba91322a; }
+.archive-role.is-selected > span:last-child { color: #262f21; font-weight: 700; }
+.archive-role input:focus-visible + .archive-role-emblem { outline: 2px solid #342a15; outline-offset: 4px; }
+.archive-seal-caption { text-align: center; font-size: 11px; font-style: italic; color: #716047; line-height: 1.5; margin: 25px 0 0; }
+.archive-return { position: absolute; top: calc(100% - 8px); left: 0; background: transparent; border: 0; color: #c5bda6; padding: 10px 0; font-size: 12px; cursor: pointer; }
+.archive-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; padding: 0; margin: -1px; }
+.archive-screen :is(button, input):focus-visible { outline: 2px solid #f0ca7b; outline-offset: 5px; }
+.archive-spread :is(button, input):focus-visible { outline-color: #3a482d; }
+.archive-recognition { position: fixed; inset: 0; z-index: 50; background: #090e0bf2; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #d9c18b; animation: archive-recognize 2300ms ease both; }
+.archive-recognition svg { width: 130px; margin-bottom: 25px; filter: drop-shadow(0 0 24px #d9ab5044); }
+.archive-recognition p { font-style: italic; font-size: 19px; color: #b9af98; }
+.archive-recognition strong { font-weight: 400; font-size: clamp(48px, 8vw, 86px); line-height: 1.3; color: #eee3c8; }
+.archive-recognition > span { font-variant: small-caps; font-size: 23px; letter-spacing: .13em; }
+.archive-chronicle { display: flex; flex-direction: column; align-items: center; gap: 25px; padding: 35px clamp(16px, 4vw, 70px) 60px; border: 8px solid #050605; }
+.archive-chronicle-heading { position: relative; width: min(1220px, 100%); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; color: #cabb95; }
+.archive-chronicle-heading p { margin: 0; font-size: 15px; font-variant: small-caps; letter-spacing: .08em; }
+.archive-chronicle-heading > span { font-size: 12px; font-style: italic; }
+.archive-chronicle .chronicle-book { position: relative; color: #2d291d; }
+.archive-chronicle .chronicle-page { background: repeating-linear-gradient(94deg, #644c2405 0 1px, transparent 1px 4px), radial-gradient(ellipse at 70% 30%, #e9e3ce, #ccc3a6); padding-bottom: 35px; display: flex; flex-direction: column; }
+.archive-chronicle .chronicle-seal { border: none; border-radius: 0; box-shadow: none; color: #766137; }
+.archive-chronicle .chronicle-seal svg { width: 100%; height: 100%; }
+.archive-chronicle .chronicle-marginalia { position: static; margin: 40px 0 25px auto; }
+.archive-chronicle .chronicle-page footer { position: static; margin-top: auto; }
+.archive-chronicle .chronicle-page footer button { background: #363d2b; }
+.archive-chronicle .chronicle-page h1:focus { outline: none; }
+@keyframes archive-unfold { from { opacity: 0; transform: perspective(1300px) rotateX(9deg) scale(.95); } to { opacity: 1; transform: perspective(1300px) rotateX(0) scale(1); } }
+@keyframes archive-dust { 0%, 100% { opacity: 0; transform: translate(0, 0); } 35% { opacity: .45; } 75% { opacity: .15; } 99% { transform: translate(30px, -70px); } }
+@keyframes archive-recognize { 0% { opacity: 0; } 30%, 85% { opacity: 1; } 100% { opacity: 1; } }
+@media (min-width: 1600px) { .archive-cover { padding-top: 100px; } }
+@media (max-width: 1100px) {
+  .archive-screen { padding-inline: 4vw; }
+  .archive-composition { grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr); gap: 30px; }
+  .archive-inscription-page, .archive-seal-page { padding-inline: 20px; }
+  .archive-introduction h1 { font-size: 38px; }
+  .archive-offered-seal { gap: 10px; }
+  .archive-offered-seal p { font-size: 18px; }
+}
+@media (max-width: 800px) {
+  .archive-screen { padding: 35px 20px 0; border-width: 5px; }
+  .archive-composition { display: flex; flex-direction: column-reverse; gap: 0; min-height: auto; width: 100%; }
+  .archive-introduction { align-self: stretch; padding: 5px 0 0 15%; }
+  .archive-eyebrow { margin-bottom: 13px; font-size: 9px; }
+  .archive-introduction h1 { font-size: 43px; }
+  .archive-introduction h1 > span { font-size: 17px; margin-bottom: 7px; }
+  .archive-title-rule { margin: 20px 0; width: 120px; }
+  .archive-invocation { font-size: 16px; }
+  .archive-offered-seal, .archive-whisper { display: none; }
+  .archive-hanging-lantern { width: 155px; left: -55px; top: -85px; }
+  .archive-artifact { width: 100%; padding: 35px 0 50px; }
+  .archive-cover { width: min(320px, 78%); padding: 56px 25px 35px; }
+  .archive-cover-title { font-size: 31px; }
+  .archive-cover-small { font-size: 11px; }
+  .archive-cover-seal { margin-block: 25px; }
+  .archive-cover-action { padding-top: 24px; font-size: 9px; }
+  .archive-clasp { right: -17px; width: 63px; }
+  .archive-spread { width: min(600px, 100%); }
+  .archive-composition.is-unsealed .archive-invocation, .archive-composition.is-unsealed .archive-title-rule { display: none; }
+  .archive-composition.is-unsealed .archive-introduction { padding: 0; }
+  .archive-return { top: calc(100% - 43px); }
+  .archive-footer { font-size: 8px; padding-top: 25px; }
+  .archive-chronicle { padding: 20px 10px; border-width: 5px; }
+}
+@media (max-width: 520px) {
+  .archive-spread { display: flex; flex-direction: column; border-width: 5px; }
+  .archive-spread::after { display: none; }
+  .archive-inscription-page, .archive-seal-page { padding: 24px 25px; }
+  .archive-inscription-page { display: flex; flex-direction: column; }
+  .archive-folio-number { margin-bottom: 22px; }
+  .archive-page-copy { margin-bottom: 20px; }
+  .archive-page-copy br, .archive-agreement br { display: none; }
+  .archive-seal-page { border-top: 1px solid #857955; }
+  .archive-role-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 8px; }
+  .archive-role-emblem { width: 59px; height: 59px; }
+  .archive-role { font-size: 11px; }
+  .archive-notice { min-height: 0; }
+  .archive-notice:empty { margin: 0; }
+  .archive-agreement { margin-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .archive-screen *, .archive-chronicle * { animation: none !important; transition: none !important; }
+  .archive-cover:hover { transform: rotate(-7deg) rotateY(9deg); }
+}

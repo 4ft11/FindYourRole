@@ -7,6 +7,7 @@ import DmItemGenerator from '@/components/dm-item-generator';
 import DmBattleMap from '@/components/dm-battle-map';
 import DmWorldMap from '@/components/dm-world-map';
 import DmAdventureConsole from '@/components/dm-adventure-console';
+import GuideAccess from '@/components/guide-access';
 
 type Draft = { id: string; name: string; updatedAt: string; data: UIWindowData };
 const draftsKey = 'wayfarer-dm-ui-drafts-v1';
@@ -16,6 +17,9 @@ function copyText(text: string) {
 }
 
 export default function DmUiStudio() {
+  return <GuideAccess><StudioContents /></GuideAccess>;
+}
+function StudioContents() {
   const [data, setData] = useState<UIWindowData>(defaultWindowData);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [importValue, setImportValue] = useState('');
@@ -37,6 +41,14 @@ export default function DmUiStudio() {
   const plainText = useMemo(() => windowPlainText(data), [data]);
   const set = <K extends keyof UIWindowData>(key: K, value: UIWindowData[K]) => setData((current) => ({ ...current, [key]: value }));
   const persistDrafts = (next: Draft[]) => { setDrafts(next); window.localStorage.setItem(draftsKey, JSON.stringify(next)); };
+  function prepareReveal(title: string, text: string) {
+    try {
+      const previous = JSON.parse(localStorage.getItem('rumerianne-guide-reveal-draft-v1') || '{}') as { text?: string };
+      if (previous.text?.trim() && !window.confirm('Replace the unfinished live-reveal draft? Nothing will be sent to players yet.')) return;
+      localStorage.setItem('rumerianne-guide-reveal-draft-v1', JSON.stringify({ kind: 'Notice', recipient: '', title, text, window: 'system', die: 20, modifier: 0 }));
+      setStudioTab('adventure');
+    } catch { setStatus('Could not carry the draft. Copy the text and paste it into the live chapter instead.'); }
+  }
 
   function saveDraft() {
     const draft: Draft = { id: crypto.randomUUID?.() || String(Date.now()), name: data.heading || 'Untitled Window', updatedAt: new Date().toISOString(), data };
@@ -56,9 +68,9 @@ export default function DmUiStudio() {
   if (presenting) return <main className="presentation-stage" onClick={() => setPresenting(false)}><div onClick={(event) => event.stopPropagation()}><UIWindow data={data} presentation /></div><p>Tap the background or press Escape to return</p></main>;
 
   return <main className="dm-shell">
-    <header className="dm-header"><div><p>THE INDEX // GUIDE CREATION SURFACE</p><h1>DM CREATION STUDIO</h1></div><span className="dm-local-badge">LOCAL TOOLS // LIVE THREAD READY</span></header>
-    <nav className="dm-tabs" aria-label="DM Studio sections"><button className={studioTab === 'adventure' ? 'active' : ''} onClick={() => setStudioTab('adventure')}>TEXT ADVENTURE</button><button className={studioTab === 'windows' ? 'active' : ''} onClick={() => setStudioTab('windows')}>SYSTEM WINDOWS</button><button className={studioTab === 'messages' ? 'active' : ''} onClick={() => setStudioTab('messages')}>MESSAGE GENERATOR</button><button className={studioTab === 'items' ? 'active' : ''} onClick={() => setStudioTab('items')}>ITEM GENERATOR</button><button className={studioTab === 'maps' ? 'active' : ''} onClick={() => setStudioTab('maps')}>BATTLE MAPS</button><button className={studioTab === 'world' ? 'active' : ''} onClick={() => setStudioTab('world')}>EMPIRE MAP</button></nav>
-    {studioTab === 'adventure' ? <DmAdventureConsole /> : studioTab === 'messages' ? <DmMessageGenerator /> : studioTab === 'items' ? <DmItemGenerator /> : studioTab === 'maps' ? <DmBattleMap /> : studioTab === 'world' ? <DmWorldMap /> : <div className="dm-workspace">
+    <header className="dm-header"><div><p>THE CHRONICLE OF RUMERIANNE</p><h1>The unseen hand</h1></div></header>
+    <nav className="dm-tabs" aria-label="Folio bookmarks"><button className={studioTab === 'adventure' ? 'active' : ''} onClick={() => setStudioTab('adventure')}>Live chapter</button><button className={studioTab === 'windows' ? 'active' : ''} onClick={() => setStudioTab('windows')}>Illuminations</button><button className={studioTab === 'messages' ? 'active' : ''} onClick={() => setStudioTab('messages')}>Messages</button><button className={studioTab === 'items' ? 'active' : ''} onClick={() => setStudioTab('items')}>Objects</button><button className={studioTab === 'maps' ? 'active' : ''} onClick={() => setStudioTab('maps')}>Battle maps</button><button className={studioTab === 'world' ? 'active' : ''} onClick={() => setStudioTab('world')}>Empire map</button></nav>
+    {studioTab === 'adventure' ? <DmAdventureConsole /> : studioTab === 'messages' ? <DmMessageGenerator onPrepare={prepareReveal} /> : studioTab === 'items' ? <DmItemGenerator onPrepare={prepareReveal} /> : studioTab === 'maps' ? <DmBattleMap /> : studioTab === 'world' ? <DmWorldMap /> : <div className="dm-workspace">
       <aside className="dm-editor">
         <div className="dm-notice">Window drafts stay on this browser until exported. This studio cannot edit the public website or send anything automatically.</div>
         <div className="dm-grid">
@@ -75,7 +87,8 @@ export default function DmUiStudio() {
         <div className="dm-toggles"><label><input type="checkbox" checked={data.glitched} onChange={(event) => set('glitched', event.target.checked)} /> Glitched appearance</label><label><input type="checkbox" checked={data.privateMessage} onChange={(event) => set('privateMessage', event.target.checked)} /> Private Message</label></div>
         <div className="dm-actions primary-actions"><button onClick={saveDraft}>SAVE DRAFT</button><button onClick={duplicate}>DUPLICATE</button><button onClick={clear}>CLEAR</button></div>
         <div className="dm-actions"><button onClick={() => copy('PLAIN TEXT', plainText)}>COPY PLAIN TEXT</button><button onClick={() => copy('WINDOW DATA', JSON.stringify(data, null, 2))}>COPY WINDOW DATA</button><button onClick={() => { downloadWindowPng(data); setStatus('PNG DOWNLOAD STARTED'); }}>DOWNLOAD AS PNG</button></div>
-        <button className="present-button" onClick={() => setPresenting(true)}>PRESENT FULLSCREEN</button>
+        <button className="present-button" onClick={() => prepareReveal(data.heading, plainText)}>PREPARE FOR LIVE REVEAL</button>
+        <button className="present-button" onClick={() => setPresenting(true)}>PREVIEW FULLSCREEN ON THIS DEVICE</button>
         <section className="dm-import"><label className="dm-field"><span>IMPORT WINDOW OR DRAFT ARCHIVE JSON</span><textarea rows={5} value={importValue} onChange={(event) => setImportValue(event.target.value)} placeholder="Paste copied window data or a draft archive here" /></label><div className="dm-actions"><button onClick={importData}>IMPORT WINDOW DATA</button><button onClick={() => copy('DRAFT ARCHIVE', JSON.stringify({ version: 1, drafts }, null, 2))}>COPY ALL DRAFTS JSON</button></div></section>
         {drafts.length > 0 && <section className="draft-list"><h2>SAVED DRAFTS</h2>{drafts.map((draft) => <button key={draft.id} onClick={() => { setData(draft.data); setStatus(`LOADED: ${draft.name.toUpperCase()}`); }}><span>{draft.name}</span><small>{new Date(draft.updatedAt).toLocaleString()}</small></button>)}</section>}
       </aside>

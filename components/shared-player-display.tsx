@@ -1,7 +1,8 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import AdventureMessageList from '@/components/adventure-message-list';
+import ChronicleEmblem from '@/components/chronicle-emblem';
 import type { AdventureSession } from '@/lib/adventure-types';
 
 const displayCodeKey = 'rumerianne-shared-display-code-v1';
@@ -19,7 +20,7 @@ export default function SharedPlayerDisplay() {
       const result = await response.json() as { session: AdventureSession };
       setSession(result.session);
       setConnectedCode(code);
-      window.localStorage.setItem(displayCodeKey, code);
+      try { window.localStorage.setItem(displayCodeKey, code); } catch { /* Storage is optional. */ }
       if (!silent) setNotice('The shared page is open.');
     } catch {
       if (!silent) setNotice('That chapter is not open to the shared display.');
@@ -27,8 +28,10 @@ export default function SharedPlayerDisplay() {
   }, []);
 
   useEffect(() => {
-    const remembered = window.localStorage.getItem(displayCodeKey);
-    if (remembered) { setRoomCode(remembered); void load(remembered, true); }
+    const timer = setTimeout(() => {
+      try { const remembered = window.localStorage.getItem(displayCodeKey); if (remembered) { setRoomCode(remembered); void load(remembered, true); } } catch { /* Ask for the key. */ }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [load]);
 
   useEffect(() => {
@@ -39,16 +42,18 @@ export default function SharedPlayerDisplay() {
 
   function connect(event: FormEvent) { event.preventDefault(); void load(roomCode); }
 
-  if (!session) return <main className="shared-display-gate"><form onSubmit={connect}><p>Rumerianne · Shared Display</p><h1>The book is closed to the room.</h1><label><span>Chapter key</span><input value={roomCode} onChange={(event) => setRoomCode(event.target.value)} autoComplete="off" /></label><button disabled={!roomCode.trim()}>Open the shared page</button><output>{notice}</output></form></main>;
+  if (!session) return <main className="rpg-world rpg-guide-gate"><form className="rpg-sealed-folio" onSubmit={connect}><ChronicleEmblem /><p>Rumerianne · Shared Display</p><h1>A window into the chapter.</h1><label><span>Chapter key</span><input value={roomCode} onChange={(event) => setRoomCode(event.target.value)} autoComplete="off" /></label><button disabled={!roomCode.trim()}>Open the shared page</button><output>{notice}</output></form></main>;
 
   const guideThinking = session.typing.some((item) => item.role === 'guide');
-  const latest = session.messages.slice(-8);
+  const latest = [...(session.reveals ?? session.messages)].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const illustration = latest.find((message) => message.imageData);
+  const illumination = latest.find((message) => message.ui || message.kind === 'system' || message.kind === 'warning');
+  const narration = [...session.messages].reverse().find((message) => message.kind === 'narration' && message.text);
 
-  return <main className="shared-display-stage">
-    <section className="shared-display-book">
-      <header><p>Current chapter</p><h1>{session.title}</h1><span>{session.scene}</span></header>
-      <div className="shared-display-content"><AdventureMessageList messages={latest} />{guideThinking && <div className="shared-guide-thinking">The Guide is considering…</div>}</div>
-      <footer><span>{session.mode.replace('-', ' ')}</span><button type="button" onClick={() => { window.localStorage.removeItem(displayCodeKey); setSession(null); setConnectedCode(''); }}>Close display</button></footer>
-    </section>
+  return <main className="rpg-world rpg-shared-screen">
+    {illustration?.imageData && <img className="rpg-shared-backdrop" src={illustration.imageData} alt={illustration.imageName || 'The current scene'} />}
+    <header><p className="rpg-kicker">The Chronicle of Rumerianne</p><h1>{session.title}</h1></header>
+    <section className="rpg-shared-inscription" aria-live="polite">{illumination ? <><p className="rpg-kicker">{illumination.ui?.type || 'A message'}</p><h2>{illumination.ui?.title || 'Through the veil'}</h2><p>{illumination.text}</p></> : <p>{narration?.text || session.scene}</p>}</section>
+    <p className="rpg-shared-thinking">{guideThinking ? '…the gods are thinking…' : '\u00a0'}</p>
   </main>;
 }

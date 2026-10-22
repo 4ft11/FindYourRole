@@ -1,0 +1,82 @@
+RUMERIANNE — YOUR ARTWORK, PIECE BY PIECE
+
+You do not need to draw everything before using the website.
+The current illustrations are temporary, replaceable assets. All words,
+buttons, role selection, messages, and dice remain working website elements.
+
+START WITH ONE THING: THE OPEN BOOK
+
+Canvas: 3000 × 1800 pixels, landscape, 300 DPI, sRGB.
+Draw it facing the viewer almost straight on, not steeply tilted.
+Keep the spine exactly in the middle and both pages largely blank.
+Keep ornament near the edges, leaving the central 70–80% of each page pale
+and quiet enough for black writing.
+
+Suggested layers:
+  1. Left page
+  2. Right page
+  3. Spine / gutter
+  4. Leather cover, edges, metal corners
+  5. Shadow underneath
+
+Export a transparent PNG of the complete open book.
+Keep the layered Procreate original. If possible, also export left and
+right page layers separately. The live adventure makes the right page
+wider than the left; separate layers let that happen without stretching
+your decorations.
+
+Please do NOT draw the headings, player names, buttons, or paragraph text.
+I will place those on top as readable, accessible, interactive elements.
+
+THEN, WHEN YOU FEEL LIKE IT
+
+1. ROOM / ARCHIVE BACKGROUND — 2560 × 1440 pixels.
+   Landscape. Warm sunlight to one side, quiet moonlight to the other.
+   Keep the middle relatively dark and uncluttered behind the book.
+   Export a PNG without a book or lettering.
+
+2. CLOSED BOOK — 2000 × 2500 pixels, transparent background.
+   Separate layers for cover, clasp, metallic ornament, and cast shadow.
+   A closed and slightly opened version can share the SAME canvas and
+   position if you want an opening transition later.
+
+3. SEALED ENVELOPE — 1400 × 900 pixels, transparent background.
+   Separate paper and wax-seal layers. Closed/open versions should line up.
+   This becomes the invitation to a live chapter.
+
+4. ROLE SYMBOLS — 1024 × 1024 pixels each, transparent background.
+   Same line weight, padding, and visual size across all six roles.
+   Keep them readable small. A warm ivory or gold ink version works well
+   on a dark cloth banner. You do not need to draw the role names.
+
+5. CHARACTER PORTRAITS — 1600 × 2000 pixels.
+   Transparent background if they should sit directly on the page.
+   A painted background is fine if you prefer framed portraits instead.
+
+6. GUIDE'S SCRYING BASIN / PORTAL — 2000 × 1600 pixels, transparent PNG.
+   Separate rim, empty center, and glow. Leave the center empty for your
+   live preview. This replaces the temporary basin shape.
+
+7. SCENES, MAP FRAGMENTS, AND DISCOVERIES — 2560 × 1440 pixels.
+   These can be drawn whenever the campaign needs them.
+   The current live upload limit is 1.5 MB per image; keep your full-size
+   original and export a smaller web copy for a session.
+
+YOUR LANTERN
+
+Your current off/on drawings are already used. You do not need to fix
+them now. Future lantern versions should retain the same 2000 × 2500
+canvas and alignment. Keep metalwork, paper, hidden symbol, internal light,
+and surrounding glow on separate layers when convenient.
+
+EXPORT SETTINGS
+
+Use sRGB and PNG. Turn off Procreate's Background Color when transparency
+is needed. Pixel dimensions matter more than DPI on a website; 300 DPI is
+fine and keeps your originals useful for print. Do not flatten your only
+Procreate copy. No animation needs to be drawn frame by frame.
+
+PRIORITY
+
+Open book first. Then whichever you enjoy most.
+The envelope, role symbols, portraits, and basin can all wait.

@@ -1,143 +1,128 @@
 'use client';
-/* eslint-disable @next/next/no-img-element -- local previews use player-provided data URLs */
-
-import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+/* eslint-disable @next/next/no-img-element */
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import AdventureMessageList from '@/components/adventure-message-list';
-import type { AdventureMessageKind, AdventureSession, AdventureSessionMode } from '@/lib/adventure-types';
+import ChronicleEmblem from '@/components/chronicle-emblem';
+import type { AdventureSession } from '@/lib/adventure-types';
 
-const dmKeyStorage = 'wayfarer-adventure-dm-key';
-
-async function imageFromFile(file?: File) {
-  if (!file) return undefined;
-  if (!file.type.startsWith('image/') || file.size > 1_500_000) throw new Error('Choose an image smaller than 1.5 MB.');
-  return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error('The image could not be read.')); reader.readAsDataURL(file); });
-}
+type FormKind = 'Narration' | 'Whisper' | 'Image' | 'Notice' | 'Quest' | 'Die';
+type Draft = { kind: FormKind; recipient: string; text: string; title: string; window: 'system' | 'quest' | 'guidance' | 'memory' | 'warning' | 'error'; die: number; modifier: number };
+const blankDraft: Draft = { kind: 'Narration', recipient: 'all', text: '', title: '', window: 'system', die: 20, modifier: 0 };
+const draftKey = 'rumerianne-guide-reveal-draft-v1';
 
 export default function DmAdventureConsole() {
-  const [dmKey, setDmKey] = useState('');
-  const [keyEntry, setKeyEntry] = useState('');
   const [session, setSession] = useState<AdventureSession | null>(null);
-  const [title, setTitle] = useState('Unwritten One-Shot');
-  const [scene, setScene] = useState('The connection has not yet opened.');
-  const [sessionMode, setSessionMode] = useState<AdventureSessionMode>('in-person');
-  const [roomCode, setRoomCode] = useState('');
-  const [playersText, setPlayersText] = useState('');
-  const [active, setActive] = useState(false);
-  const [diceEnabled, setDiceEnabled] = useState(true);
-  const [recipient, setRecipient] = useState('display');
-  const [kind, setKind] = useState<AdventureMessageKind>('narration');
-  const [text, setText] = useState('');
-  const [imageData, setImageData] = useState<string>();
+  const [setup, setSetup] = useState<AdventureSession | null>(null);
+  const [draft, setDraft] = useState<Draft>(blankDraft);
+  const [draftReady, setDraftReady] = useState(false);
+  const [image, setImage] = useState('');
   const [imageName, setImageName] = useState('');
-  const [status, setStatus] = useState('GUIDE CONSOLE LOCKED');
-  const [confirmClear, setConfirmClear] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [rollPlayer, setRollPlayer] = useState('');
-  const [rollLabel, setRollLabel] = useState('WISDOM CHECK');
-  const [rollPrompt, setRollPrompt] = useState('');
-  const [rollDie, setRollDie] = useState(20);
-  const [rollModifier, setRollModifier] = useState(0);
-  const [uiRecipient, setUiRecipient] = useState('display');
-  const [uiType, setUiType] = useState<'system' | 'quest' | 'guidance' | 'memory' | 'warning' | 'error'>('system');
-  const [uiTitle, setUiTitle] = useState('SYSTEM NOTICE');
-  const [uiText, setUiText] = useState('');
-  const lastTyping = useRef(0);
-
-  const applySession = useCallback((next: AdventureSession) => {
-    setSession(next); setTitle(next.title); setScene(next.scene); setSessionMode(next.mode || 'in-person'); setRoomCode(next.roomCode); setPlayersText(next.players.join('\n')); setActive(next.active); setDiceEnabled(next.diceEnabled);
-  }, []);
-
-  const load = useCallback(async (key: string, silent = false, syncSetup = true) => {
+  const [status, setStatus] = useState('Opening the folio…');
+  const [busy, setBusy] = useState(false);
+  const [manual, setManual] = useState<Record<string, string>>({});
+  const typingAt = useRef(0);
+  const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((current) => ({ ...current, [key]: value }));
+  const load = useCallback(async (syncSetup = false) => {
     try {
-      const response = await fetch('/api/adventure?view=guide', { headers: { 'x-wayfarer-dm-key': key }, cache: 'no-store' });
-      if (!response.ok) throw new Error('Authorization failed');
-      const result = await response.json() as { session: AdventureSession }; setSession(result.session); if (syncSetup) applySession(result.session); setDmKey(key); window.sessionStorage.setItem(dmKeyStorage, key); if (!silent) setStatus('GUIDE CONSOLE CONNECTED'); return true;
-    } catch { if (!silent) setStatus('GUIDE KEY NOT RECOGNIZED'); return false; }
-  }, [applySession]);
-
-  useEffect(() => { const timer = window.setTimeout(() => { const saved = window.sessionStorage.getItem(dmKeyStorage); if (saved) { setKeyEntry(saved); void load(saved, true); } }, 0); return () => window.clearTimeout(timer); }, [load]);
-  useEffect(() => { if (!dmKey) return; const timer = window.setInterval(() => void load(dmKey, true, false), 1800); return () => window.clearInterval(timer); }, [dmKey, load]);
-
-  async function unlock(event: FormEvent) { event.preventDefault(); setStatus('AUTHORIZING GUIDE...'); await load(keyEntry); }
-  async function saveSetup() {
-    setStatus('WRITING SESSION PARAMETERS...');
-    const players = playersText.split(/[\n,]/).map((item) => item.trim()).filter(Boolean);
-    const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'setup', dmKey, title, scene, mode: sessionMode, roomCode, players, active, diceEnabled }) });
-    if (response.ok) { const result = await response.json() as { session: AdventureSession }; applySession(result.session); setStatus('SESSION PARAMETERS SAVED'); } else setStatus('SESSION SAVE FAILED');
+      const response = await fetch('/api/adventure?view=guide', { cache: 'no-store' });
+      if (!response.ok) throw new Error('The folio is locked. Refresh to enter the private phrase.');
+      const data = await response.json() as { session: AdventureSession };
+      setSession(data.session); if (syncSetup) { setSetup(data.session); setStatus('Your preparations are private until you reveal them.'); }
+    } catch (error) { setStatus(error instanceof Error ? error.message : 'The connection was interrupted.'); }
+  }, []);
+  useEffect(() => {
+    const restore = setTimeout(() => {
+    void load(true);
+    try { const saved = JSON.parse(localStorage.getItem(draftKey) || 'null'); if (saved) setDraft({ ...blankDraft, ...saved }); } catch { /* Ignore a damaged draft. */ }
+    setDraftReady(true);
+    }, 0);
+    const timer = setInterval(() => void load(), 1800);
+    return () => { clearInterval(timer); clearTimeout(restore); };
+  }, [load]);
+  useEffect(() => { if (draftReady) try { localStorage.setItem(draftKey, JSON.stringify(draft)); } catch { /* Remains in memory. */ } }, [draft, draftReady]);
+  async function action(payload: Record<string, unknown>) {
+    if (busy) return false;
+    setBusy(true);
+    try {
+      const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(data.error || 'The reveal did not reach its destination.');
+      await load(); setStatus('The chapter has been updated.'); return true;
+    } catch (error) { setStatus(error instanceof Error ? error.message : 'Connection interrupted. Your draft has been kept.'); return false; }
+    finally { setBusy(false); }
   }
-
-  async function sendTyping() { if (!dmKey || Date.now() - lastTyping.current < 3000) return; lastTyping.current = Date.now(); await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'typing', dmKey }) }); }
-  async function selectImage(event: ChangeEvent<HTMLInputElement>) { try { const file = event.target.files?.[0]; setImageData(await imageFromFile(file)); setImageName(file?.name || ''); setStatus('VISUAL RECORD READY'); } catch (error) { setStatus(error instanceof Error ? error.message.toUpperCase() : 'IMAGE REJECTED'); } }
-  async function send(event: FormEvent) {
-    event.preventDefault(); if (!text.trim() && !imageData) return; setSending(true); setStatus('TRANSMITTING TO THREAD...');
-    const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', dmKey, recipient, kind, text, imageData, imageName }) });
-    if (response.ok) { setText(''); setImageData(undefined); setImageName(''); setStatus('MESSAGE ENTERED INTO THE THREAD'); await load(dmKey, true, false); } else setStatus('TRANSMISSION FAILED'); setSending(false);
+  function write(value: string) {
+    set('text', value);
+    if (Date.now() - typingAt.current < 3000 || draft.kind === 'Whisper' || draft.recipient === 'guide') return;
+    typingAt.current = Date.now();
+    // Only a generic writing indicator is transmitted; draft content stays on this device.
+    void fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'typing' }) }).catch(() => undefined);
   }
-  async function clearTranscript() { const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'clear', dmKey }) }); if (response.ok) { setConfirmClear(false); setStatus('TRANSCRIPT CLEARED'); await load(dmKey, true, false); } }
-  async function requestRoll(event: FormEvent) {
-    event.preventDefault(); if (!rollPlayer) return; setSending(true); setStatus(`SUMMONING ${rollPlayer.toUpperCase()} TO ROLL...`);
-    const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'request-roll', dmKey, recipient: rollPlayer, label: rollLabel, prompt: rollPrompt, sides: rollDie, modifier: rollModifier }) });
-    if (response.ok) { setRollPrompt(''); setStatus(`ROLL REQUEST SENT TO ${rollPlayer.toUpperCase()}`); await load(dmKey, true, false); } else setStatus('ROLL REQUEST FAILED'); setSending(false);
+  function selectImage(file?: File) {
+    if (!file) return;
+    if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type) || file.size > 1_500_000) { setStatus('Choose a PNG, JPG, WebP, or GIF smaller than 1.5 MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => { setImage(String(reader.result)); setImageName(file.name); };
+    reader.onerror = () => setStatus('This illustration could not be read.'); reader.readAsDataURL(file);
   }
-  async function cancelRoll(requestId: string) {
-    const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel-roll', dmKey, requestId }) });
-    if (response.ok) { setStatus('ROLL REQUEST WITHDRAWN'); await load(dmKey, true, false); }
+  async function reveal(event: FormEvent) {
+    event.preventDefault();
+    const payload = draft.kind === 'Die'
+      ? { action: 'request-roll', recipient: draft.recipient, label: draft.title || 'Wisdom check', prompt: draft.text, sides: draft.die, modifier: draft.modifier }
+      : { action: 'send', recipient: draft.recipient, kind: draft.kind === 'Whisper' ? 'whisper' : ['Notice', 'Quest'].includes(draft.kind) ? 'system' : 'narration', text: draft.text, uiTitle: draft.title, uiType: draft.kind === 'Quest' ? 'quest' : draft.window, imageData: draft.kind === 'Image' ? image : undefined, imageName };
+    if (await action(payload)) { setDraft((current) => ({ ...current, text: '', title: '' })); setImage(''); setStatus(draft.kind === 'Die' ? 'The requested die is waiting on the player’s left page.' : 'Revealed. Your next draft will remain private.'); }
   }
-  async function sendUiMessage(event: FormEvent) {
-    event.preventDefault(); if (!uiText.trim()) return; setSending(true); setStatus('OPENING SYSTEM WINDOW...');
-    const response = await fetch('/api/adventure', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', dmKey, recipient: uiRecipient, kind: 'system', text: uiText, uiType, uiTitle }) });
-    if (response.ok) { setUiText(''); setStatus('UI MESSAGE DISPLAYED'); await load(dmKey, true, false); } else setStatus('UI MESSAGE FAILED'); setSending(false);
-  }
-
-  if (!dmKey || !session) return <section className="dm-adventure-lock"><form onSubmit={unlock}><p>PRIVATE TOOL // GUIDE ONLY</p><h2>Open the Adventure Terminal</h2><span>On the local preview, use <strong>wayfarer-local</strong>. On Render, use the private key you place in the WAYFARER_DM_KEY setting.</span><label>GUIDE KEY<input type="password" value={keyEntry} onChange={(event) => setKeyEntry(event.target.value)} /></label><button disabled={!keyEntry}>UNLOCK CONSOLE</button><small>{status}</small></form></section>;
-
-  const playerTyping = session.typing.filter((item) => item.role === 'player');
-  return <section className="dm-adventure-console">
-    <aside className="dm-adventure-setup">
-      <header><p>TEXT ADVENTURE // SESSION CONTROL</p><h2>Build the private thread</h2></header>
-      <label>SESSION MODE<select value={sessionMode} onChange={(event) => setSessionMode(event.target.value as AdventureSessionMode)}><option value="in-person">In Person</option><option value="online">Online</option><option value="hybrid">Hybrid</option></select><small>This changes presentation only. It never creates a separate session.</small></label>
-      <label>ONE-SHOT TITLE<input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-      <label>CURRENT SCENE / LOCATION<textarea rows={3} value={scene} onChange={(event) => setScene(event.target.value)} /></label>
-      <label>THREAD KEY FOR PLAYERS<input value={roomCode} onChange={(event) => setRoomCode(event.target.value)} placeholder="Example: SUN-17" /></label>
-      <label>INVITED PLAYERS <small>One name per line. One player works perfectly; add more whenever needed.</small><textarea rows={5} value={playersText} onChange={(event) => setPlayersText(event.target.value)} placeholder={'Traveler One\nTraveler Two'} /></label>
-      <div className="dm-adventure-switches"><label><input type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} /> Thread open to players</label><label><input type="checkbox" checked={diceEnabled} onChange={(event) => setDiceEnabled(event.target.checked)} /> Enable Guide roll requests</label></div>
-      <button className="adventure-primary" onClick={saveSetup}>SAVE SESSION SETUP</button>
-      <div className="adventure-share-route"><span>PLAYER ENTRANCE</span><strong>/adventure</strong><button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/adventure`)}>COPY ADDRESS</button></div>
-      <details><summary>HOW TO RUN A ONE-ON-ONE</summary><ol><li>Add the player’s name above.</li><li>Choose a private thread key.</li><li>Turn on “Thread open.”</li><li>Send the player the address and key.</li><li>Write narration and wait for their response.</li></ol></details>
-    </aside>
-
-    <main className="dm-adventure-main">
-      <header className="dm-adventure-scene"><div><span>LIVE NARRATIVE THREAD</span><h2>{session.title}</h2><p>{session.scene}</p></div><div className={session.active ? 'is-live' : ''}><i />{session.active ? 'OPEN' : 'CLOSED'}</div></header>
-      <div className="dm-adventure-log"><AdventureMessageList messages={session.messages} guideView />{playerTyping.length > 0 && <div className="adventure-thinking"><i /><span>{playerTyping.map((item) => item.name.toUpperCase()).join(', ')} {playerTyping.length === 1 ? 'IS' : 'ARE'} CHOOSING THEIR WORDS...</span></div>}</div>
-      <form className="dm-adventure-composer" onSubmit={send}>
-        <div><label>DESTINATION<select value={recipient} onChange={(event) => setRecipient(event.target.value)}><option value="display">Shared Display + all players</option><option value="players">All personal Player Books</option><option value="guide">DM notes only</option>{session.players.map((player) => <option key={player} value={player}>Only {player}</option>)}</select></label><label>MESSAGE FORM<select value={kind} onChange={(event) => { const nextKind = event.target.value as AdventureMessageKind; setKind(nextKind); if (nextKind === 'whisper' && ['all', 'display', 'players', 'guide'].includes(recipient) && session.players[0]) setRecipient(session.players[0]); }}><option value="narration">Narration</option><option value="dialogue">Voice / dialogue</option><option value="system">UI system notice</option><option value="warning">Warning / interruption</option><option value="whisper">Private whisper · out of game</option></select></label></div>
-        <label>WRITE INTO THE WORLD<textarea rows={5} value={text} onChange={(event) => { setText(event.target.value); void sendTyping(); }} placeholder="The corridor answers with a second set of footsteps..." /></label>
-        {imageData && <div className="adventure-image-ready"><img src={imageData} alt="Ready to send" /><span>{imageName}</span><button type="button" onClick={() => { setImageData(undefined); setImageName(''); }}>REMOVE</button></div>}
-        <footer><label className="adventure-file">ADD IMAGE<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={selectImage} /></label><button className="adventure-send" disabled={sending || (!text.trim() && !imageData)}>SEND TO THREAD</button></footer>
+  if (!session || !setup) return <p role="status">{status}</p>;
+  const needsPlayer = draft.kind === 'Whisper' || draft.kind === 'Die';
+  const validPlayer = session.players.includes(draft.recipient);
+  const publicMessages = [...(session.reveals ?? session.messages)].filter((message) => ['all', 'display'].includes(message.recipient)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const currentImage = publicMessages.find((message) => message.imageData);
+  const currentNotice = publicMessages.find((message) => message.ui);
+  const currentNarration = [...session.messages].reverse().find((message) => ['all', 'display'].includes(message.recipient) && message.kind === 'narration' && !message.imageData);
+  const canReveal = !!draft.recipient && (!needsPlayer || validPlayer) && (draft.kind === 'Die' || (draft.kind === 'Image' ? !!image : !!draft.text.trim()));
+  return <section className="rpg-workbench">
+    <div className="rpg-display-launch"><a href="/display" target="rumerianne-shared-display">Open Shared Display ↗</a><span>Keep this folio on your laptop. Put that separate window on the TV.</span></div>
+    <details className="rpg-session-setup">
+      <summary>{session.active ? 'Chapter open' : 'Chapter closed'} · {session.title} <span>Prepare session</span></summary>
+      <div className="rpg-setup-fields">
+        <label>Chapter title<input value={setup.title} maxLength={120} onChange={(event) => setSetup({ ...setup, title: event.target.value })} /></label>
+        <label>Gathering<select value={setup.mode} onChange={(event) => setSetup({ ...setup, mode: event.target.value as AdventureSession['mode'] })}><option value="in-person">In person</option><option value="online">Online</option><option value="hybrid">Hybrid</option></select></label>
+        <label>Chapter key<input value={setup.roomCode} maxLength={40} onChange={(event) => setSetup({ ...setup, roomCode: event.target.value })} /></label>
+        <label>Invited players · one per line<textarea value={setup.players.join('\n')} onChange={(event) => setSetup({ ...setup, players: event.target.value.split('\n') })} rows={4} /></label>
+        <label className="rpg-wide-field">Scene caption<textarea value={setup.scene} maxLength={400} rows={2} onChange={(event) => setSetup({ ...setup, scene: event.target.value })} /></label>
+        <label className="rpg-check"><input type="checkbox" checked={setup.active} onChange={(event) => setSetup({ ...setup, active: event.target.checked })} /> Invite players into this chapter</label>
+        <label className="rpg-check"><input type="checkbox" checked={setup.diceEnabled} onChange={(event) => setSetup({ ...setup, diceEnabled: event.target.checked })} /> Allow requested dice</label>
+        <button disabled={busy || (setup.active && (!setup.roomCode.trim() || !setup.players.some((name) => name.trim())))} onClick={async () => { if (await action({ ...setup, action: 'setup' })) await load(true); }}>Save chapter settings</button>
+      </div>
+      <p>Use <a href="/display" target="_blank" rel="noreferrer">the Shared Display</a> for the TV or Discord stream. Players enter through <a href="/adventure" target="_blank" rel="noreferrer">their own book</a>. Give them the chapter key above.</p>
+    </details>
+    <div className="rpg-workbench-grid">
+      <form className="rpg-draft-desk" onSubmit={reveal}>
+        <p className="rpg-kicker">Prepare a little magic</p><h2>What will you place in the world?</h2>
+        <div className="rpg-cue-tools" aria-label="Reveal type">{(['Narration', 'Whisper', 'Image', 'Notice', 'Quest', 'Die'] as FormKind[]).map((kind) => <button key={kind} type="button" aria-pressed={draft.kind === kind} onClick={() => { set('kind', kind); if (['Whisper', 'Die'].includes(kind) && !validPlayer) set('recipient', session.players[0] || ''); }}>{kind}</button>)}</div>
+        <label>Who will receive this?<select value={draft.recipient} onChange={(event) => set('recipient', event.target.value)}><option value="" disabled>Choose a player</option>{!needsPlayer && <><option value="all">Shared Display + all players</option><option value="players">All personal books</option><option value="guide">My private notes only</option></>}{session.players.map((player) => <option key={player} value={player}>Only {player}</option>)}</select></label>
+        {['Notice', 'Quest', 'Die'].includes(draft.kind) && <label>{draft.kind === 'Die' ? 'Requested check' : 'Inscription title'}<input maxLength={80} value={draft.title} onChange={(event) => set('title', event.target.value)} placeholder={draft.kind === 'Die' ? 'Wisdom check' : 'A new path opens'} /></label>}
+        {draft.kind === 'Notice' && <label>Illumination<select value={draft.window} onChange={(event) => set('window', event.target.value as Draft['window'])}>{['system', 'guidance', 'memory', 'warning', 'error'].map((kind) => <option key={kind}>{kind}</option>)}</select></label>}
+        {draft.kind === 'Die' && <div className="rpg-dice-fields"><label>Die<select value={draft.die} onChange={(event) => set('die', Number(event.target.value))}>{[4, 6, 8, 10, 12, 20, 100].map((die) => <option key={die} value={die}>d{die}</option>)}</select></label><label>Modifier<input type="number" min={-20} max={20} value={draft.modifier} onChange={(event) => set('modifier', Number(event.target.value))} /></label></div>}
+        <label>{draft.kind === 'Die' ? 'What are they attempting?' : 'Your words'}<textarea rows={8} maxLength={draft.kind === 'Die' ? 300 : 16000} value={draft.text} onChange={(event) => write(event.target.value)} placeholder="Let the scene unfold…" /></label>
+        {draft.kind === 'Image' && <label>Choose an illustration<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(event) => selectImage(event.target.files?.[0])} /><small>Under 1.5 MB. Attachments are not saved with local drafts.</small></label>}
+        <p className="rpg-draft-note">Private draft. Nothing here is revealed until you choose.</p>
+        <button className="rpg-reveal-action" disabled={busy || !canReveal}>{busy ? 'Sending…' : draft.kind === 'Die' ? 'Request this roll →' : draft.recipient === 'guide' ? 'Keep as a private note' : 'Reveal to the chosen audience →'}</button>
       </form>
-      <form className="dm-ui-transmitter" onSubmit={sendUiMessage}>
-        <header><div><span>DIRECT INTERFACE CONTROL</span><strong>Send a UI message</strong></div><small>Appears as an in-world system window.</small></header>
-        <div className="dm-ui-fields">
-          <label>DESTINATION<select value={uiRecipient} onChange={(event) => setUiRecipient(event.target.value)}><option value="display">Shared Display + all players</option><option value="players">All personal Player Books</option><option value="guide">DM notes only</option>{session.players.map((player) => <option key={player} value={player}>Only {player}</option>)}</select></label>
-          <label>WINDOW TYPE<select value={uiType} onChange={(event) => setUiType(event.target.value as typeof uiType)}><option value="system">System</option><option value="quest">Quest</option><option value="guidance">Guidance</option><option value="memory">Memory</option><option value="warning">Warning</option><option value="error">Error</option></select></label>
-          <label>TITLE<input value={uiTitle} onChange={(event) => setUiTitle(event.target.value)} placeholder="SYSTEM NOTICE" /></label>
+      <section className="rpg-scrying-desk">
+        <p className="rpg-kicker">In the scrying basin · private preview</p>
+        <div className={`rpg-scrying-basin cue-${draft.kind.toLowerCase()}`}>
+          {draft.kind === 'Image' && image ? <img src={image} alt="Unpublished illustration preview" /> : <ChronicleEmblem />}
+          {draft.kind === 'Die' && <div className="rpg-die">{draft.die}</div>}
+          <h2>{draft.title || (draft.kind === 'Die' ? 'Wisdom check' : draft.kind)}</h2>
+          <p>{draft.text || 'Your next reveal gathers here.'}</p>
+          <small>{needsPlayer ? `For ${draft.recipient || 'a chosen player'}` : draft.recipient === 'all' ? 'Shared with the whole gathering' : draft.recipient === 'guide' ? 'Only you' : `For ${draft.recipient}`}</small>
         </div>
-        <label>MESSAGE<textarea rows={3} value={uiText} onChange={(event) => setUiText(event.target.value)} placeholder="A new path has been recognized." /></label>
-        <button className="adventure-send" disabled={sending || !uiText.trim()}>DISPLAY UI MESSAGE</button>
-      </form>
-      {diceEnabled && <form className="dm-roll-director" onSubmit={requestRoll}>
-        <header><div><span>GUIDE CONTROL · FATE</span><strong>Command a roll</strong></div><small>The player cannot roll until you ask.</small></header>
-        <div className="dm-roll-fields">
-          <label>PLAYER<select value={rollPlayer} onChange={(event) => setRollPlayer(event.target.value)}><option value="">Choose player</option>{session.players.map((player) => <option key={player} value={player}>{player}</option>)}</select></label>
-          <label>CHECK<select value={rollLabel} onChange={(event) => setRollLabel(event.target.value)}>{['STRENGTH CHECK','DEXTERITY CHECK','CONSTITUTION CHECK','INTELLIGENCE CHECK','WISDOM CHECK','CHARISMA CHECK','PERCEPTION CHECK','INSIGHT CHECK','INVESTIGATION CHECK','STEALTH CHECK','PERSUASION CHECK','DECEPTION CHECK','SAVING THROW','ATTACK ROLL','CUSTOM CHECK'].map((label) => <option key={label}>{label}</option>)}</select></label>
-          <label>DIE<select value={rollDie} onChange={(event) => setRollDie(Number(event.target.value))}>{[4,6,8,10,12,20,100].map((sides) => <option key={sides} value={sides}>d{sides}</option>)}</select></label>
-          <label>MODIFIER<input type="number" min={-20} max={20} value={rollModifier} onChange={(event) => setRollModifier(Number(event.target.value))} /></label>
-        </div>
-        <label>WHAT THE PLAYER FEELS OR ATTEMPTS<textarea rows={2} value={rollPrompt} onChange={(event) => setRollPrompt(event.target.value)} placeholder="Something is watching from the dark. Decide whether you notice it." /></label>
-        <button className="adventure-send" disabled={sending || !rollPlayer}>REQUEST ROLL</button>
-        {session.rollRequests.length > 0 && <div className="dm-pending-rolls"><span>AWAITING FATE</span>{session.rollRequests.map((request) => <div key={request.id}><strong>{request.player} · {request.label}</strong><button type="button" onClick={() => cancelRoll(request.id)}>WITHDRAW</button></div>)}</div>}
-      </form>}
-      <div className="dm-adventure-footer"><span>{status}</span>{!confirmClear ? <button onClick={() => setConfirmClear(true)}>CLEAR OLD TRANSCRIPT</button> : <div><span>REMOVE EVERY MESSAGE?</span><button onClick={() => setConfirmClear(false)}>KEEP THEM</button><button onClick={clearTranscript}>YES, CLEAR</button></div>}</div>
-    </main>
+        <details className="rpg-current-display" open><summary>Players see now · shared display</summary><div>{currentImage?.imageData && <img src={currentImage.imageData} alt={currentImage.imageName || 'Current shared illustration'} />}{currentNotice ? <><h3>{currentNotice.ui?.title}</h3><p>{currentNotice.text}</p><button disabled={busy} onClick={() => action({ action: 'clear-notice', recipient: 'all' })}>Dismiss shared notice · keep scene</button></> : <p>{currentNarration?.text || 'The current page is quiet.'}</p>}</div></details>
+      </section>
+    </div>
+    <section className="rpg-guide-correspondence"><h2>Words returning to you</h2><div className="rpg-guide-log" data-conversation-scroll><AdventureMessageList messages={session.messages} guideView /></div>{session.typing.filter((item) => item.role === 'player').map((item) => <p key={item.name}>{item.name} is choosing their words…</p>)}</section>
+    {session.rollRequests.length > 0 && <section className="rpg-pending-dice"><h3>Awaiting a roll</h3>{session.rollRequests.map((request) => <div key={request.id}><span>{request.player} · {request.label}</span><label>Physical die result<input type="number" min={1} max={request.sides} value={manual[request.id] || ''} onChange={(event) => setManual({ ...manual, [request.id]: event.target.value })} /></label><button disabled={busy || !manual[request.id]} onClick={() => action({ action: 'confirm-roll', requestId: request.id, result: Number(manual[request.id]) })}>Record physical roll</button><button disabled={busy} onClick={() => action({ action: 'cancel-roll', requestId: request.id })}>Withdraw</button></div>)}</section>}
+    <footer className="rpg-workbench-footer"><p role="status">{status}</p><button disabled={busy} onClick={() => { if (window.confirm('Clear this live conversation, its revealed scenes, and pending rolls? This cannot be undone. Your Chronicle records and private drafts are not changed.')) void action({ action: 'clear' }); }}>Clear this chapter’s conversation</button></footer>
   </section>;
 }

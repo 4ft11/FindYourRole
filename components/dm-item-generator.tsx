@@ -38,7 +38,7 @@ const defaultItem: ItemDraft = {
 
 function clean(value: string) { return value.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').trim(); }
 
-export default function DmItemGenerator() {
+export default function DmItemGenerator({ onPrepare }: { onPrepare?: (title: string, text: string) => void }) {
   const [item, setItem] = useState<ItemDraft>(defaultItem);
   const [status, setStatus] = useState('DRAFTS REMAIN ON THIS DEVICE');
   const outputRef = useRef<HTMLTextAreaElement>(null);
@@ -104,7 +104,7 @@ export default function DmItemGenerator() {
         <label className="dm-field"><span>LIMITATION OR COST</span><textarea rows={3} value={item.limitation} onChange={(event) => update('limitation', event.target.value)} /></label>
         <label className="dm-field"><span>HISTORY OR STRANGE RECORD</span><textarea rows={3} value={item.history} onChange={(event) => update('history', event.target.value)} /></label>
         <label className="dm-field"><span>FOOTER NOTICE</span><input value={item.notice} onChange={(event) => update('notice', event.target.value)} /></label>
-        <div className="dm-actions primary-actions"><button onClick={save}>SAVE DRAFT</button><button onClick={copy}>COPY ITEM</button><button onClick={clear}>CLEAR</button></div>
+        <div className="dm-actions primary-actions"><button onClick={save}>SAVE DRAFT</button><button onClick={copy}>COPY ITEM</button><button onClick={clear}>CLEAR</button>{onPrepare && <button onClick={() => onPrepare(item.name, output)}>PREPARE FOR LIVE REVEAL</button>}</div>
       </section>
       <section className="message-output-panel"><div className="preview-label"><span>ITEM RECORD PREVIEW</span><small>PLAIN TEXT // NO EMOJI</small></div><textarea ref={outputRef} value={output} readOnly aria-label="Generated plain-text item record" /><button className="present-button" onClick={copy}>COPY ITEM RECORD</button></section>
     </div>

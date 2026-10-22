@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { timingSafeEqual } from 'node:crypto';
 import { AdventureSession, blankAdventureSession } from '@/lib/adventure-types';
 
 const dataDirectory = process.env.WAYFARER_DATA_DIR?.trim() || path.join(process.cwd(), 'data');
@@ -36,6 +37,10 @@ export function updateAdventure(change: (current: AdventureSession) => Adventure
 
 export function isGuideAuthorized(secret: string | null | undefined) {
   const configured = process.env.WAYFARER_DM_KEY?.trim();
-  if (configured) return secret === configured;
+  if (configured) {
+    const a = Buffer.from(typeof secret === 'string' ? secret : '');
+    const b = Buffer.from(configured);
+    return a.length === b.length && timingSafeEqual(a, b);
+  }
   return process.env.NODE_ENV !== 'production' && secret === 'wayfarer-local';
 }

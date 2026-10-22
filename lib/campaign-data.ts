@@ -1,5 +1,5 @@
 import seed from '@/data/campaign-seed.json';
-import type { BubbleState, CampaignPlayer, RoleStatus } from './campaign-types';
+import type { BubbleState, CampaignEntry, CampaignPlayer, RoleStatus } from './campaign-types';
 
 const statusColorDefaults = { accentColor: '#715328', filledColor: '#4b361d', emptyColor: '#c9b77f' };
 
@@ -16,7 +16,9 @@ export function getAllPlayers(): CampaignPlayer[] {
     ...player,
     statusValues: player.statusValues.map((status) => ({ ...status, state: status.state as BubbleState | undefined })),
     lastSystemUpdate: 'UPLOADED CAMPAIGN RECORD',
-    entries: [],
+    entries: ((player as unknown as { entries?: CampaignEntry[] }).entries || [])
+      .filter((entry) => entry.state !== 'hidden')
+      .map((entry) => entry.state === 'locked' || entry.state === 'corrupted' ? { ...entry, body: '' } : entry),
   }));
 }
 

@@ -42,6 +42,8 @@ export type AdventureSession = {
   diceEnabled: boolean;
   players: string[];
   messages: AdventureMessage[];
+  /** Last deliberately revealed illustration and notice per audience. Drafts never enter this list. */
+  reveals?: AdventureMessage[];
   rollRequests: AdventureRollRequest[];
   typing: AdventureTyping[];
   updatedAt: string;

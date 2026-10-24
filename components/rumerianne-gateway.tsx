@@ -55,7 +55,7 @@ function ArchiveEnvironment() {
 }
 
 function ClosedBook({ onRecognized, recognizedPlayer }: { onRecognized: (player: CampaignPlayer) => void; recognizedPlayer: CampaignPlayer | null }) {
-  const [unsealed, setUnsealed] = useState(false);
+  const unsealed = true;
   const [name, setName] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [notice, setNotice] = useState('');
@@ -65,9 +65,7 @@ function ClosedBook({ onRecognized, recognizedPlayer }: { onRecognized: (player:
   const nameInput = useRef<HTMLInputElement>(null);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (unsealed) nameInput.current?.focus({ preventScroll: true });
-  }, [unsealed]);
+  useEffect(() => { nameInput.current?.focus({ preventScroll: true }); }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -133,9 +131,7 @@ function ClosedBook({ onRecognized, recognizedPlayer }: { onRecognized: (player:
 
   return <section className={`archive-composition rpg-entrance${unsealed ? ' is-unsealed' : ''}${recognizedPlayer ? ' is-recognized' : ''}`} aria-labelledby="rumerianne-title">
     <div className="archive-artifact">
-      {!unsealed ? <button className="archive-cover" type="button" onClick={() => setUnsealed(true)} aria-label="Open the Chronicle of Rumerianne">
-        <span className="archive-sr-only">Open the Chronicle</span>
-      </button> : <form className="archive-spread" onSubmit={enter} aria-busy={submitting}>
+      <form className="archive-spread" onSubmit={enter} aria-busy={submitting}>
         <div className="archive-inscription-page">
           <p className="archive-folio-number">I · The reader</p>
           <h2>A familiar hand.</h2>
@@ -172,14 +168,12 @@ function ClosedBook({ onRecognized, recognizedPlayer }: { onRecognized: (player:
             </button>
           </div>}
         </section>
-      </form>}
-      {unsealed && !recognizedPlayer && <button className="archive-return" type="button" onClick={() => { setUnsealed(false); setNotice(''); }}>← Close the cover</button>}
+      </form>
     </div>
     <div className="archive-introduction">
       <p className="archive-eyebrow">A private chronicle</p>
       <h1 id="rumerianne-title"><span>The Chronicle of</span>Rumerianne</h1>
       <div className="archive-title-rule" aria-hidden="true"><i /></div>
-      {!unsealed && <><p className="archive-invocation">Some stories remember their reader.</p><button className="rpg-open-action" onClick={() => setUnsealed(true)}>Open the Chronicle <span aria-hidden="true">→</span></button></>}
     </div>
   </section>;
 }

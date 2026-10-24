@@ -15,16 +15,15 @@ export function getAllPlayers(): CampaignPlayer[] {
   return seed.players.map((player) => ({
     ...player,
     statusValues: player.statusValues.map((status) => ({ ...status, state: status.state as BubbleState | undefined })),
-    lastSystemUpdate: 'UPLOADED CAMPAIGN RECORD',
+    lastSystemUpdate: 'FIRST CHAPTER RECOVERED',
     entries: ((player as unknown as { entries?: CampaignEntry[] }).entries || [])
       .filter((entry) => entry.state !== 'hidden')
       .map((entry) => entry.state === 'locked' || entry.state === 'corrupted' ? { ...entry, body: '' } : entry),
   }));
 }
 
-export function findPlayerByIdentity(name: string, role: string) {
+export function findPlayerByName(name: string) {
   const player = getAllPlayers().find((item) => normalizeIdentity(item.name) === normalizeIdentity(name));
   if (!player) return { kind: 'unknown' as const };
-  if (normalizeIdentity(player.role) !== normalizeIdentity(role)) return { kind: 'conflict' as const };
   return { kind: 'matched' as const, player };
 }

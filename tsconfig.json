@@ -42,7 +42,9 @@
     ".next-review/types/**/*.ts",
     ".next-review/dev/types/**/*.ts",
     ".next-release/types/**/*.ts",
-    ".next-release/dev/types/**/*.ts"
+    ".next-release/dev/types/**/*.ts",
+    ".next-local-preview/types/**/*.ts",
+    ".next-local-preview/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

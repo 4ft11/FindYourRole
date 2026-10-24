@@ -14,19 +14,74 @@
   "players": [
     {
       "key": "ariel", "name": "Ariel", "role": "The Sworn", "displayRole": "The Sworn", "path": "UNCONFIRMED", "characterClass": "Paladin", "subclass": "UNCONFIRMED", "species": "FORM UNCONFIRMED", "manifestation": "AWAITING RECOGNITION", "unknownUser": false,
-      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"ariel-equipment-returned","playerKey":"ariel","type":"inventory","title":"Recovered Equipment","body":"Your equipment was recovered from the cart and returned to you.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"ariel-night-before","playerKey":"ariel","type":"memory","title":"The Night Before","body":"Fragments of the night before have returned: Cosmopolitan and Twist.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"ariel-guard-memory","playerKey":"ariel","type":"memory","title":"The Guard","body":"The record is clear: Ariel killed a guard.","state":"visible","sortOrder":30,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"ariel-transport-record","playerKey":"ariel","type":"private_notice","title":"Transport Record","body":"Record partially destroyed. Remaining transport information has been blacked out.","state":"partial","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":false}
+      ]
     },
     {
       "key": "noah", "name": "Noah", "role": "The Sovereign", "displayRole": "The Sovereign", "path": "UNCONFIRMED", "characterClass": "Warlock", "subclass": "UNCONFIRMED", "species": "Aasimar", "manifestation": "Necrotic Shroud", "unknownUser": false,
-      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"noah-equipment-returned","playerKey":"noah","type":"inventory","title":"Recovered Equipment","body":"Your equipment was recovered from the cart and returned to you.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"noah-night-before","playerKey":"noah","type":"memory","title":"The Night Before","body":"Fragments of the night before have returned: Cosmopolitan and Twist.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"noah-transport-record","playerKey":"noah","type":"private_notice","title":"Transport Record","body":"Record partially destroyed. REDACTED. HEAVILY SECURED TRANSPORT.","state":"partial","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":false}
+      ]
     },
     {
       "key": "michael", "name": "Michael", "role": "The Weaver", "displayRole": "The Weaver", "path": "The Unfettered", "characterClass": "Monk", "subclass": "Open Hand", "species": "FORM UNCONFIRMED", "manifestation": "AWAITING RECOGNITION", "unknownUser": false,
-      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"michael-equipment-returned","playerKey":"michael","type":"inventory","title":"Recovered Equipment","body":"Your equipment was recovered from the cart and returned to you.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"michael-night-before","playerKey":"michael","type":"memory","title":"The Night Before","body":"Fragments of the night before have returned: Cosmopolitan and Twist.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"michael-transport-record","playerKey":"michael","type":"private_notice","title":"Transport Record","body":"Record partially destroyed. Remaining transport information has been blacked out.","state":"partial","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":false}
+      ]
     },
     {
       "key": "chris", "name": "Chris", "role": "The Seer", "displayRole": "The Seer", "path": "The Starreader", "characterClass": "Druid", "subclass": "Circle of the Stars", "species": "Aasimar", "manifestation": "UNCONFIRMED", "unknownUser": false,
-      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"0%","state":"empty"}]
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"chris-equipment-returned","playerKey":"chris","type":"inventory","title":"Recovered Equipment","body":"Your equipment was recovered from the cart and returned to you.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"chris-night-before","playerKey":"chris","type":"memory","title":"The Night Before","body":"Fragments of the night before have returned: Cosmopolitan and Twist.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"chris-transport-record","playerKey":"chris","type":"private_notice","title":"Transport Record","body":"Record partially destroyed. REDACTED. PROPERTY OF THE STELLAR DAWN SANCTUARY.","state":"partial","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":false}
+      ]
+    },
+    {
+      "key": "brian", "name": "Brian", "role": "The Shepherd", "displayRole": "The Shepherd", "path": "Temple Guard", "characterClass": "Paladin", "subclass": "Oath of Devotion", "species": "Tiefling", "manifestation": "PILGRIM’S STEP", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"brian-equipment-returned","playerKey":"brian","type":"inventory","title":"Recovered Equipment","body":"Your equipment was recovered from the cart and returned to you: Dawn, Mercy, Witness, your holy symbol of Auren, and the Book of First Light.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"brian-night-before","playerKey":"brian","type":"memory","title":"The Night Before","body":"Fragments of the night before have returned: Cosmopolitan and Twist.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"brian-first-light","playerKey":"brian","type":"inventory","title":"Book of First Light","body":"Official scripture marked by private corrections and prophecies that contradict the approved text.","state":"visible","sortOrder":30,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"brian-transport-record","playerKey":"brian","type":"private_notice","title":"Transport Record","body":"Record partially destroyed. Remaining transport information has been blacked out.","state":"partial","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"brian-current-objective","playerKey":"brian","type":"objective","title":"Contradicting Scripture","body":"Understand why another divine voice answered this body and why a prophecy described Ariel before you met.","state":"visible","sortOrder":50,"eventDate":"","acquisitionLabel":"acquired","isCurrent":true}
+      ]
+    },
+    {
+      "key": "matt", "name": "Matt", "role": "The Justiciar", "displayRole": "The Justiciar", "path": "Journeyman — Definition Locked", "characterClass": "Bard", "subclass": "College of Valor", "species": "Human", "manifestation": "JOURNEYMAN — DO NOT DISCLOSE", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"matt-equipment-returned","playerKey":"matt","type":"inventory","title":"Recovered Equipment","body":"Your equipment was recovered from the cart and returned to you, including the investigator badge, sealed case papers, and hidden songbook.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"matt-night-before","playerKey":"matt","type":"memory","title":"The Night Before","body":"Fragments of the night before have returned: Cosmopolitan and Twist.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"acquired","isCurrent":false},
+        {"id":"matt-cover-record","playerKey":"matt","type":"private_notice","title":"The Assassin Story","body":"Your public claim is Rogue Assassin. Your actual class is College of Valor Bard.","state":"visible","sortOrder":30,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"matt-transport-record","playerKey":"matt","type":"private_notice","title":"Transport Record","body":"Record partially destroyed. Remaining transport information has been blacked out.","state":"partial","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"matt-current-objective","playerKey":"matt","type":"objective","title":"Journeyman","body":"Learn what Journeyman means, determine why the records contradict one another, and protect your right to choose what you become.","state":"locked","sortOrder":50,"eventDate":"","acquisitionLabel":"returned","isCurrent":true}
+      ]
+    },
+    {
+      "key": "celis", "name": "Celis", "role": "PENDING", "displayRole": "AWAITING RECOGNITION", "path": "Auri of Sunwheel Circus", "characterClass": "Bard", "subclass": "College of Lore", "species": "Daylight Fae — Halfling glamour", "manifestation": "CONCEALED WINGS — FLIGHT 30 FT.", "unknownUser": false,
+      "statusValues": [{"label":"System Recognition","value":"CONFIRMED"},{"label":"Memory Recovery","value":"PARTIAL","state":"partial"}],
+      "entries": [
+        {"id":"celis-auri-identity","playerKey":"celis","type":"private_notice","title":"The Name Auri","body":"Your fantasy body is publicly known as Auri, the celebrated main performer of Sunwheel Circus. You remain Celis, and you do not remember Auri’s life.","state":"visible","sortOrder":10,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"celis-daughter-of-auren","playerKey":"celis","type":"title","title":"Daughter of Auren","body":"You know that you are a daughter of Auren. The light speaks to you with warmth, but much of that bond remains unexplained.","state":"visible","sortOrder":20,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"celis-body-memory","playerKey":"celis","type":"memory","title":"What the Body Remembers","body":"Auri’s body remembers how the costume fastens, where the props belong, which entrance leads to the ring, how to breathe before a performance, and how to move when the music begins. Celis does not consciously remember learning any of it.","state":"partial","sortOrder":30,"eventDate":"","acquisitionLabel":"returned","isCurrent":false},
+        {"id":"celis-sunwheel-circus","playerKey":"celis","type":"objective","title":"Sunwheel Circus","body":"The crowd knows Auri. The performance waits beneath the painted sun.","state":"visible","sortOrder":40,"eventDate":"","acquisitionLabel":"returned","isCurrent":true},
+        {"id":"celis-third-bell","playerKey":"celis","type":"guide_message","title":"Auren’s Warning","body":"When the third bell rings, leave the painted sun. Take them with you. Protection is not the same as safety.","state":"visible","sortOrder":50,"eventDate":"","acquisitionLabel":"returned","isCurrent":true},
+        {"id":"celis-separated-record","playerKey":"celis","type":"private_notice","title":"Separation Record","body":"You were placed where the light could still reach you. The reason the others were taken remains withheld.","state":"partial","sortOrder":60,"eventDate":"","acquisitionLabel":"returned","isCurrent":false}
+      ]
     }
   ]
 }

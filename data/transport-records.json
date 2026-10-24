@@ -1,0 +1,61 @@
+{
+  "registryCondition": "All recovered transport records are partially destroyed.",
+  "records": [
+    {
+      "key": "ariel",
+      "name": "Ariel",
+      "entityType": "player",
+      "condition": "partial",
+      "visibleRecord": "Remaining transport information has been blacked out."
+    },
+    {
+      "key": "michael",
+      "name": "Michael",
+      "entityType": "player",
+      "condition": "partial",
+      "visibleRecord": "Remaining transport information has been blacked out."
+    },
+    {
+      "key": "ren",
+      "name": "Ren",
+      "entityType": "npc",
+      "condition": "partial",
+      "visibleRecord": "TREASON"
+    },
+    {
+      "key": "gregor",
+      "name": "Gregor",
+      "entityType": "npc",
+      "condition": "partial",
+      "visibleRecord": "PETTY THEFT"
+    },
+    {
+      "key": "brian",
+      "name": "Brian",
+      "entityType": "player",
+      "condition": "partial",
+      "visibleRecord": "Remaining transport information has been blacked out."
+    },
+    {
+      "key": "noah",
+      "name": "Noah",
+      "entityType": "player",
+      "condition": "partial",
+      "visibleRecord": "REDACTED. HEAVILY SECURED TRANSPORT."
+    },
+    {
+      "key": "chris",
+      "name": "Chris",
+      "entityType": "player",
+      "condition": "partial",
+      "visibleRecord": "REDACTED. PROPERTY OF THE STELLAR DAWN SANCTUARY."
+    },
+    {
+      "key": "matt",
+      "name": "Matt",
+      "entityType": "player",
+      "condition": "partial",
+      "visibleRecord": "Remaining transport information has been blacked out."
+    }
+  ]
+}
